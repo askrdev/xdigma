@@ -1,0 +1,23 @@
+{
+  "name": "Xdigma Creative Studio",
+  "short_name": "Xdigma",
+  "description": "Studio digital independen untuk website, brand system, motion, dan growth experience.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "icons": [
+    {
+      "src": "assets/favicon.webp",
+      "sizes": "64x64",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/logo_xdigma.webp",
+      "sizes": "2076x2076",
+      "type": "image/webp",
+      "purpose": "any"
+    }
+  ]
+}

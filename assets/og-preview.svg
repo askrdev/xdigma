@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="redGlow" cx="73%" cy="42%" r="58%">
+      <stop offset="0%" stop-color="#d42020" stop-opacity="0.34"/>
+      <stop offset="42%" stop-color="#d42020" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#050505" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cyanGlow" cx="19%" cy="82%" r="42%">
+      <stop offset="0%" stop-color="#41d7d2" stop-opacity="0.20"/>
+      <stop offset="100%" stop-color="#050505" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="fade" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#050505" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#050505" stop-opacity="0.82"/>
+    </linearGradient>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="26" stdDeviation="28" flood-color="#000000" flood-opacity="0.42"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="#050505"/>
+  <rect width="1200" height="630" fill="url(#redGlow)"/>
+  <rect width="1200" height="630" fill="url(#cyanGlow)"/>
+  <g opacity="0.16" stroke="#f6f6f4" stroke-width="1">
+    <path d="M0 105H1200M0 210H1200M0 315H1200M0 420H1200M0 525H1200"/>
+    <path d="M120 0V630M240 0V630M360 0V630M480 0V630M600 0V630M720 0V630M840 0V630M960 0V630M1080 0V630"/>
+  </g>
+  <g opacity="0.42" fill="none">
+    <ellipse cx="790" cy="352" rx="355" ry="98" stroke="#d42020" stroke-width="2" transform="rotate(-14 790 352)"/>
+    <ellipse cx="790" cy="352" rx="300" ry="128" stroke="#41d7d2" stroke-width="2" transform="rotate(-48 790 352)"/>
+    <ellipse cx="790" cy="352" rx="370" ry="150" stroke="#d42020" stroke-width="1" transform="rotate(22 790 352)"/>
+  </g>
+  <circle cx="820" cy="352" r="42" fill="#f6f6f4" opacity="0.78"/>
+  <circle cx="946" cy="186" r="8" fill="#d42020"/>
+  <circle cx="336" cy="505" r="6" fill="#41d7d2" opacity="0.82"/>
+  <circle cx="1026" cy="462" r="5" fill="#d42020" opacity="0.7"/>
+  <rect width="1200" height="630" fill="url(#fade)"/>
+
+  <g transform="translate(80 68)" filter="url(#softShadow)">
+    <g transform="translate(0 0)">
+      <line x1="7" y1="7" x2="52" y2="52" stroke="#f6f6f4" stroke-width="7" stroke-linecap="round"/>
+      <line x1="52" y1="7" x2="7" y2="52" stroke="#f6f6f4" stroke-width="7" stroke-linecap="round"/>
+      <line x1="7" y1="52" x2="52" y2="7" stroke="#d42020" stroke-width="3" stroke-linecap="round"/>
+    </g>
+    <text x="76" y="24" fill="#f6f6f4" font-family="Arial Black, Inter, Arial, sans-serif" font-size="22" font-weight="900">XDIGMA</text>
+    <text x="76" y="50" fill="#f6f6f4" font-family="Arial Black, Inter, Arial, sans-serif" font-size="22" font-weight="900">CREATIVE STUDIO</text>
+  </g>
+
+  <text x="80" y="188" fill="#b9b2a4" font-family="Arial Black, Inter, Arial, sans-serif" font-size="24" font-weight="900" letter-spacing="1">JAKARTA / REMOTE WEB STUDIO</text>
+  <text x="80" y="276" fill="#d42020" font-family="Arial Black, Inter, Arial, sans-serif" font-size="54" font-weight="900">WEBSITES THAT</text>
+  <text x="80" y="360" fill="#f6f6f4" font-family="Arial Black, Inter, Arial, sans-serif" font-size="102" font-weight="900">FEEL ALIVE,</text>
+  <text x="80" y="464" fill="#f6f6f4" font-family="Arial Black, Inter, Arial, sans-serif" font-size="102" font-weight="900">SELL CLEARLY.</text>
+  <text x="82" y="548" fill="#d7d0c2" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="800">Strategy, UX, front-end, motion, and growth systems.</text>
+
+  <rect x="935" y="498" width="185" height="52" rx="26" fill="none" stroke="#f6f6f4" stroke-opacity="0.34"/>
+  <text x="965" y="532" fill="#f6f6f4" font-family="Arial Black, Inter, Arial, sans-serif" font-size="17" font-weight="900">START A PROJECT</text>
+</svg>

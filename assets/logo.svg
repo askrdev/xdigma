@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Xdigma logo placeholder">
+  <rect width="96" height="96" rx="48" fill="#080806"/>
+  <circle cx="48" cy="48" r="33" fill="none" stroke="#f3efe4" stroke-width="8"/>
+  <circle cx="48" cy="48" r="22" fill="none" stroke="#d42020" stroke-width="4"/>
+  <path d="M30 66 66 30M30 30l36 36" stroke="#f3efe4" stroke-width="8" stroke-linecap="round"/>
+</svg>
