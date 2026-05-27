@@ -220,8 +220,12 @@ const i18n = {
     metricsTitle: "A few things we've helped clients achieve.",
     metricLabels: ["avg. engagement lift", "lead quality increase", "faster checkout flow", "prototype to launch"],
     metricTicker: ["34% bounce rate", "20k sign ups", "82% bookings increase", "396% traffic increase", "113% sales increase", "37% conversion rate"],
-    awardsTitle: "Some recognition along the way.",
-    awards: ["x 8 honorable mentions", "x 9 UI / UX awards", "x 3 featured launches"],
+    awardsTitle: "Terlatih dan tersertifikasi.",
+    awards: [
+      "Google Analytics Certified",
+      "Meta Blueprint Certified", 
+      "Google Ads Certified"
+    ],
     clientsSay: "What clients say",
     quoteButtons: ["Prev", "Next"],
     quotes: [
