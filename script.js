@@ -125,9 +125,9 @@ const parallaxElements = Array.from(document.querySelectorAll("[data-parallax]")
 const langToggle = document.querySelector(".lang-toggle");
 const contactEmail = "hello@xdigma.studio";
 const whatsappNumber = "628131770613";
-// Paste the published Google Sheet CSV URL here after connecting it to Google Form responses.
+// Paste a published Google Sheet CSV URL or Apps Script Web App URL here.
 const recentWorkSource = {
-  csvUrl: "https://script.google.com/macros/s/AKfycbyR6gpfWHisPPFS28Kcqp-opuqTJtundmWMIJkb5A7cEUMaL5pjp13QyCqH7C5Z_KAFUQ/exec",
+  url: "https://script.google.com/macros/s/AKfycbzo3wbKcu2KeN7hg8ZT9lrx1_gtOd8mjnDbP1TsIWXybpUNuDCFwYOqPD7XlWnrOA2jEA/exec",
   limit: 3
 };
 let particles = [];
@@ -627,8 +627,40 @@ function rowsFromCsv(text) {
   ));
 }
 
+function rowsFromJson(json) {
+  const items = Array.isArray(json) ? json : json?.data || [];
+  return items.map((item) => {
+    const row = {};
+    Object.entries(item || {}).forEach(([key, value]) => {
+      row[String(key).trim().toLowerCase()] = value ?? "";
+    });
+    return row;
+  });
+}
+
+function rowsFromRemoteText(text, contentType = "") {
+  const trimmedText = text.trim();
+  if (!trimmedText) return [];
+
+  if (contentType.includes("application/json") || /^[{[]/.test(trimmedText)) {
+    return rowsFromJson(JSON.parse(trimmedText));
+  }
+
+  if (/<!doctype html|<html[\s>]/i.test(trimmedText)) {
+    throw new Error("Recent work source returned HTML instead of project data. Check publish/access settings.");
+  }
+
+  return rowsFromCsv(trimmedText);
+}
+
+function getVisualClass(row, index) {
+  const visual = getField(row, ["visual", "visual class"]);
+  if (/^visual-(one|two|three)$/i.test(visual)) return visual.toLowerCase();
+  return `visual-${["one", "two", "three"][index % 3]}`;
+}
+
 function createProjectCard(project, index) {
-  const visualClass = project.visual || `visual-${["one", "two", "three"][index % 3]}`;
+  const visualClass = project.visual;
   const card = document.createElement("article");
   card.className = `project-card ${index === 0 ? "large " : ""}is-visible`;
   card.dataset.reveal = "";
@@ -686,23 +718,23 @@ function renderRecentWork(projects) {
 }
 
 async function loadRecentWorkFromGoogleSheet() {
-  if (!recentWorkSource.csvUrl) return;
+  if (!recentWorkSource.url) return;
 
   try {
-    const response = await fetch(recentWorkSource.csvUrl, { cache: "no-store" });
+    const response = await fetch(recentWorkSource.url, { cache: "no-store" });
     if (!response.ok) throw new Error(`Recent work source returned ${response.status}`);
-    const rows = rowsFromCsv(await response.text());
+    const rows = rowsFromRemoteText(await response.text(), response.headers.get("content-type") || "");
     const projects = rows
       .filter((row) => !/^no|false|0$/i.test(getField(row, ["published", "publish", "show"])))
       .map((row, index) => ({
         title: getField(row, ["title", "project title", "nama project", "name"]) || `Project ${index + 1}`,
         type: getField(row, ["type", "project type", "kategori", "category"]) || "Project",
-        copy: getField(row, ["copy", "summary", "description", "deskripsi"]) || "A recent Xdigma project.",
+        copy: getField(row, ["copy", "short summary", "summary", "description", "deskripsi"]) || "A recent Xdigma project.",
         result: getField(row, ["result", "hasil", "metric"]) || "Selected work",
         challenge: getField(row, ["challenge", "tantangan"]) || "Details are being prepared.",
         solution: getField(row, ["solution", "solusi"]) || "Details are being prepared.",
         deliverables: getListField(row, ["deliverables", "output", "scope"]),
-        visual: getField(row, ["visual", "visual class"]),
+        visual: getVisualClass(row, index),
         timeline: getField(row, ["timeline", "waktu"]) || "-",
         role: getField(row, ["role", "peran"]) || "-",
         stack: getField(row, ["stack", "tools"]) || "-",
@@ -711,7 +743,8 @@ async function loadRecentWorkFromGoogleSheet() {
       .slice(0, recentWorkSource.limit);
 
     renderRecentWork(projects);
-  } catch {
+  } catch (error) {
+    console.warn("Recent work could not be loaded:", error);
     /* Keep fallback projects visible if the external sheet cannot be loaded. */
   }
 }

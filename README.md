@@ -70,7 +70,7 @@ For production social previews, update Open Graph and Twitter image URLs in `ind
 
 ## Updating Recent Work From Google Form
 
-The Recent Work section has fallback projects in `index.html`, but it can also load projects from a Google Sheet CSV.
+The Recent Work section has fallback projects in `index.html`, but it can also load projects from a public Google Sheet CSV or an Apps Script Web App that returns JSON.
 
 1. Create a Google Form for project updates.
 2. Connect the form responses to Google Sheets.
@@ -85,6 +85,10 @@ challenge
 solution
 deliverables
 visual
+image
+website
+instagram
+link label
 timeline
 role
 stack
@@ -97,18 +101,21 @@ Useful notes:
 - `title`, `type`, `copy`, and `result` are the most important fields.
 - `deliverables` can be separated with `|`, `;`, or new lines.
 - `visual` should be one of `visual-one`, `visual-two`, or `visual-three`.
+- `image` can be an `https://` image URL for the card and case-study background.
+- Add a project URL in `website`, `instagram`, `social`, or `link` to show a link in the case-study detail.
+- `link label` is optional, for example `Website`, `Instagram`, or `Visit school site`.
 - `published` can be left blank or set to `yes`; use `no`, `false`, or `0` to hide a row.
 
-Publish the sheet to the web as CSV, then paste the CSV URL into `script.js`:
+Publish the sheet to the web as CSV or deploy the Apps Script Web App with access set to "Anyone", then paste the public URL into `script.js`:
 
 ```js
 const recentWorkSource = {
-  csvUrl: "PASTE_GOOGLE_SHEET_CSV_URL_HERE",
+  url: "PASTE_PUBLIC_CSV_OR_APPS_SCRIPT_URL_HERE",
   limit: 3
 };
 ```
 
-The site will keep showing the fallback projects if the CSV URL is empty or the sheet cannot load.
+The site will keep showing the fallback projects if the URL is empty, private, returns an access-denied HTML page, or cannot load. Check the browser console for a `Recent work could not be loaded` warning when debugging.
 
 ## Notes
 
