@@ -2671,7 +2671,7 @@ blockquote.is-current {
   }
 
   .quote-controls {
-    width: 100%;
+    display: none;
   }
 
   .quote-controls button {
@@ -2679,9 +2679,9 @@ blockquote.is-current {
   }
 
   .testimonials {
-    min-height: calc(170svh + var(--quote-distance, 680px));
+    min-height: auto;
     padding-top: 72px;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .testimonials .section-heading {
@@ -2694,39 +2694,44 @@ blockquote.is-current {
   }
 
   .quote-rail[data-reveal] {
-    display: flex;
-    grid-auto-columns: initial;
+    display: grid;
+    transform: translate3d(0, var(--reveal-y, 0px), 0) scale(var(--reveal-scale, 1));
   }
 
   .quote-rail {
-    width: max-content;
+    width: 100%;
     min-width: 0;
-    max-width: none;
-    top: clamp(92px, 13vh, 132px);
+    max-width: 100%;
+    position: relative;
+    top: auto;
+    grid-auto-flow: row;
+    grid-auto-columns: initial;
+    grid-template-columns: 1fr;
     gap: 14px;
-    padding-right: var(--pad);
+    overflow: visible;
+    padding-right: 0;
+    padding-bottom: 0;
+    scroll-snap-type: none;
+    will-change: auto;
   }
 
   blockquote {
-    width: calc(100vw - (var(--pad) * 2));
-    flex: 0 0 calc(100vw - (var(--pad) * 2));
+    width: 100%;
+    flex: initial;
     min-width: 0;
-    min-height: 360px;
-    overflow: hidden;
+    min-height: auto;
+    overflow: visible;
     padding: 22px;
-    opacity: 0.42;
-    transform: scale(0.94);
-    transform-origin: center;
+    opacity: 1;
+    transform: none;
     transition:
-      opacity 360ms ease,
-      transform 420ms var(--ease-out),
       border-color 260ms ease,
       background 260ms ease;
   }
 
   blockquote.is-current {
     opacity: 1;
-    transform: scale(1);
+    transform: none;
   }
 
   blockquote p {

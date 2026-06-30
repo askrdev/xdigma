@@ -7,6 +7,9 @@ function setupMagneticCards() {
   if (!hasFinePointer || prefersReducedMotion) return;
 
   document.querySelectorAll("[data-magnetic]").forEach((card) => {
+    if (card.dataset.magneticBound === "true") return;
+    card.dataset.magneticBound = "true";
+
     card.addEventListener("pointermove", (event) => {
       const rect = card.getBoundingClientRect();
       const x = event.clientX - rect.left;
@@ -40,6 +43,9 @@ function setupCursorStates() {
 
   const interactiveElements = document.querySelectorAll("a, button, [data-magnetic], [data-cursor]");
   interactiveElements.forEach((element) => {
+    if (element.dataset.cursorBound === "true") return;
+    element.dataset.cursorBound = "true";
+
     element.addEventListener("pointerenter", () => {
       const label = element.dataset.cursor || "";
       cursor.classList.add("is-active");
@@ -118,7 +124,12 @@ const quoteItems = Array.from(quoteRail?.querySelectorAll("blockquote") || []);
 const parallaxElements = Array.from(document.querySelectorAll("[data-parallax]"));
 const langToggle = document.querySelector(".lang-toggle");
 const contactEmail = "hello@xdigma.studio";
-const whatsappNumber = "6281229507211";
+const whatsappNumber = "628131770613";
+// Paste the published Google Sheet CSV URL here after connecting it to Google Form responses.
+const recentWorkSource = {
+  csvUrl: "https://script.google.com/macros/s/AKfycbyR6gpfWHisPPFS28Kcqp-opuqTJtundmWMIJkb5A7cEUMaL5pjp13QyCqH7C5Z_KAFUQ/exec",
+  limit: 3
+};
 let particles = [];
 let width = 0;
 let height = 0;
@@ -131,6 +142,7 @@ let resizeTicking = false;
 let quoteProgress = 0;
 let quoteTargetProgress = 0;
 let quoteNeedsRender = true;
+let remoteWorkLoaded = false;
 const storage = {
   get(key) {
     try {
@@ -554,6 +566,156 @@ function renderList(list, items) {
   });
 }
 
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let value = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    const next = text[index + 1];
+
+    if (char === '"' && inQuotes && next === '"') {
+      value += '"';
+      index += 1;
+    } else if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === "," && !inQuotes) {
+      row.push(value);
+      value = "";
+    } else if ((char === "\n" || char === "\r") && !inQuotes) {
+      if (char === "\r" && next === "\n") index += 1;
+      row.push(value);
+      if (row.some((cell) => cell.trim())) rows.push(row);
+      row = [];
+      value = "";
+    } else {
+      value += char;
+    }
+  }
+
+  row.push(value);
+  if (row.some((cell) => cell.trim())) rows.push(row);
+  return rows;
+}
+
+function getField(row, names) {
+  for (const name of names) {
+    if (row[name] !== undefined && String(row[name]).trim()) return String(row[name]).trim();
+  }
+  return "";
+}
+
+function getListField(row, names) {
+  const value = getField(row, names);
+  if (!value) return [];
+  return value
+    .split(/\s*[|;]\s*|\n+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function rowsFromCsv(text) {
+  const rows = parseCsv(text);
+  const headers = rows.shift()?.map((header) => header.trim().toLowerCase()) || [];
+  return rows.map((cells) => (
+    headers.reduce((data, header, index) => {
+      data[header] = cells[index] || "";
+      return data;
+    }, {})
+  ));
+}
+
+function createProjectCard(project, index) {
+  const visualClass = project.visual || `visual-${["one", "two", "three"][index % 3]}`;
+  const card = document.createElement("article");
+  card.className = `project-card ${index === 0 ? "large " : ""}is-visible`;
+  card.dataset.reveal = "";
+  card.dataset.magnetic = "";
+  card.dataset.parallax = "";
+  card.dataset.cursor = currentLang === "id" ? "Lihat" : "View";
+  card.dataset.caseTitle = project.title;
+  card.dataset.caseType = project.type;
+  card.dataset.caseCopy = project.copy;
+  card.dataset.caseResult = project.result;
+  card.dataset.caseChallenge = project.challenge;
+  card.dataset.caseSolution = project.solution;
+  card.dataset.caseDeliverables = JSON.stringify(project.deliverables);
+  card.dataset.caseVisual = visualClass;
+  card.dataset.caseTimeline = project.timeline;
+  card.dataset.caseRole = project.role;
+  card.dataset.caseStack = project.stack;
+  card.tabIndex = 0;
+  card.setAttribute("role", "button");
+  card.setAttribute("aria-label", `${currentLang === "id" ? "Buka studi kasus" : "Open"} ${project.title}`);
+
+  const visual = document.createElement("div");
+  visual.className = `project-visual ${visualClass}`;
+  const mock = document.createElement("div");
+  mock.className = "mock-window";
+  mock.append(document.createElement("span"), document.createElement("span"), document.createElement("span"));
+  const mockTitle = document.createElement("strong");
+  mockTitle.textContent = project.mockLabel || project.title.split(/\s+/)[0] || project.title;
+  mock.append(mockTitle, document.createElement("i"));
+  visual.append(mock);
+
+  const meta = document.createElement("div");
+  meta.className = "project-meta";
+  const type = document.createElement("span");
+  type.textContent = project.type;
+  const title = document.createElement("h3");
+  title.textContent = project.title;
+  meta.append(type, title);
+  card.append(visual, meta);
+  return card;
+}
+
+function renderRecentWork(projects) {
+  const grid = document.querySelector(".project-grid");
+  if (!grid || !projects.length) return;
+
+  grid.replaceChildren(...projects.map(createProjectCard));
+  remoteWorkLoaded = true;
+  lastCaseTrigger = null;
+  parallaxElements.length = 0;
+  parallaxElements.push(...document.querySelectorAll("[data-parallax]"));
+  setupMagneticCards();
+  setupCursorStates();
+  updateScrollMotion();
+}
+
+async function loadRecentWorkFromGoogleSheet() {
+  if (!recentWorkSource.csvUrl) return;
+
+  try {
+    const response = await fetch(recentWorkSource.csvUrl, { cache: "no-store" });
+    if (!response.ok) throw new Error(`Recent work source returned ${response.status}`);
+    const rows = rowsFromCsv(await response.text());
+    const projects = rows
+      .filter((row) => !/^no|false|0$/i.test(getField(row, ["published", "publish", "show"])))
+      .map((row, index) => ({
+        title: getField(row, ["title", "project title", "nama project", "name"]) || `Project ${index + 1}`,
+        type: getField(row, ["type", "project type", "kategori", "category"]) || "Project",
+        copy: getField(row, ["copy", "summary", "description", "deskripsi"]) || "A recent Xdigma project.",
+        result: getField(row, ["result", "hasil", "metric"]) || "Selected work",
+        challenge: getField(row, ["challenge", "tantangan"]) || "Details are being prepared.",
+        solution: getField(row, ["solution", "solusi"]) || "Details are being prepared.",
+        deliverables: getListField(row, ["deliverables", "output", "scope"]),
+        visual: getField(row, ["visual", "visual class"]),
+        timeline: getField(row, ["timeline", "waktu"]) || "-",
+        role: getField(row, ["role", "peran"]) || "-",
+        stack: getField(row, ["stack", "tools"]) || "-",
+        mockLabel: getField(row, ["mock label", "label"])
+      }))
+      .slice(0, recentWorkSource.limit);
+
+    renderRecentWork(projects);
+  } catch {
+    /* Keep fallback projects visible if the external sheet cannot be loaded. */
+  }
+}
+
 function openMailDraft(subject, lines) {
   const body = lines.filter(Boolean).join("\n");
   window.location.href = `mailto:${contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -652,7 +814,7 @@ function applyLanguage(lang) {
   setText(".intro-text p:last-child", t.introBody);
   setText(".work .section-heading h2", t.recentWork);
   setText(".work .section-heading a", t.seeAll);
-  setIndexedText(".project-meta span", t.projectTypes);
+  if (!remoteWorkLoaded) setIndexedText(".project-meta span", t.projectTypes);
   setText(".rules .section-label span:nth-child(2)", t.attitude);
   setIndexedText(".attitude-ghost span", [t.attitude, t.attitude, t.attitude]);
 
@@ -759,21 +921,23 @@ function applyLanguage(lang) {
   document.querySelector(".case-close")?.setAttribute("aria-label", t.caseAriaClose);
 
   document.querySelectorAll(".project-card[data-case-title]").forEach((card, index) => {
-    const item = t.cases[index];
-    if (!item) return;
-    card.dataset.caseTitle = item[0];
-    card.dataset.caseType = item[1];
-    card.dataset.caseCopy = item[2];
-    card.dataset.caseResult = item[3];
-    card.dataset.caseChallenge = item[4];
-    card.dataset.caseSolution = item[5];
-    card.dataset.caseDeliverables = JSON.stringify(item[6]);
-    card.dataset.caseVisual = item[7];
-    card.dataset.caseTimeline = item[8];
-    card.dataset.caseRole = item[9];
-    card.dataset.caseStack = item[10];
+    if (!remoteWorkLoaded) {
+      const item = t.cases[index];
+      if (!item) return;
+      card.dataset.caseTitle = item[0];
+      card.dataset.caseType = item[1];
+      card.dataset.caseCopy = item[2];
+      card.dataset.caseResult = item[3];
+      card.dataset.caseChallenge = item[4];
+      card.dataset.caseSolution = item[5];
+      card.dataset.caseDeliverables = JSON.stringify(item[6]);
+      card.dataset.caseVisual = item[7];
+      card.dataset.caseTimeline = item[8];
+      card.dataset.caseRole = item[9];
+      card.dataset.caseStack = item[10];
+      card.setAttribute("aria-label", t.caseAria[index]);
+    }
     card.dataset.cursor = lang === "id" ? "Lihat" : "View";
-    card.setAttribute("aria-label", t.caseAria[index]);
   });
   document.querySelectorAll(".service-list button").forEach((item) => {
     item.dataset.cursor = lang === "id" ? "Buka" : "Open";
@@ -1235,7 +1399,7 @@ function setupCaseModal() {
   if (!caseModal) return;
 
   const close = caseModal.querySelector(".case-close");
-  const cards = document.querySelectorAll(".project-card[data-case-title]");
+  const grid = document.querySelector(".project-grid");
 
   function openCase(card) {
     lastCaseTrigger = card;
@@ -1255,14 +1419,16 @@ function setupCaseModal() {
     lastCaseTrigger?.focus({ preventScroll: true });
   }
 
-  cards.forEach((card) => {
-    card.addEventListener("click", () => openCase(card));
-    card.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        openCase(card);
-      }
-    });
+  grid?.addEventListener("click", (event) => {
+    const card = event.target.closest(".project-card[data-case-title]");
+    if (card) openCase(card);
+  });
+
+  grid?.addEventListener("keydown", (event) => {
+    const card = event.target.closest(".project-card[data-case-title]");
+    if (!card || (event.key !== "Enter" && event.key !== " ")) return;
+    event.preventDefault();
+    openCase(card);
   });
 
   close.addEventListener("click", closeCase);
@@ -1354,6 +1520,7 @@ setupRuleMotion();
 setupMobileMenu();
 setupActiveNav();
 setupCaseModal();
+loadRecentWorkFromGoogleSheet();
 updateScrollMotion();
 resizeCanvas();
 animate();
