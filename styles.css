@@ -309,8 +309,7 @@ a {
   border-radius: 50%;
   background:
     radial-gradient(circle, rgba(var(--signal-red-rgb), 0.2), transparent 52%),
-    rgba(8, 8, 6, 0.04);
-  mix-blend-mode: difference;
+    rgba(8, 8, 6, 0.72);
   transform: translate3d(-50%, -50%, 0) scale(var(--cursor-scale, 1));
   transition:
     width 240ms var(--ease-out),
@@ -817,6 +816,66 @@ blockquote p {
   gap: 18px;
 }
 
+.project-grid.is-status {
+  grid-template-columns: 1fr;
+}
+
+.work-status {
+  min-height: clamp(360px, 52vh, 560px);
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+
+.work-loader-mark {
+  width: 64px;
+  aspect-ratio: 1;
+  border: 2px solid rgba(243, 239, 228, 0.2);
+  border-top-color: var(--signal-red);
+  border-right-color: rgba(65, 215, 210, 0.72);
+  border-radius: 50%;
+  animation: workLoaderSpin 850ms linear infinite;
+}
+
+.work-status-label {
+  color: rgba(243, 239, 228, 0.72);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.work-status.is-error .work-loader-mark {
+  animation: none;
+  border-color: rgba(243, 239, 228, 0.22);
+  border-top-color: var(--signal-red);
+  transform: rotate(45deg);
+}
+
+.work-retry {
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid rgba(243, 239, 228, 0.28);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--off-white);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.work-retry:hover,
+.work-retry:focus-visible {
+  border-color: var(--signal-red);
+  background: var(--signal-red);
+}
+
 .project-card {
   min-height: 440px;
   display: grid;
@@ -825,14 +884,11 @@ blockquote p {
   position: relative;
   border-radius: var(--radius);
   background: var(--coal);
+  contain: layout paint;
   isolation: isolate;
   transform:
-    perspective(1000px)
-    translate3d(0, calc(var(--parallax-y, 0px) + var(--lift-y, 0px)), 0)
-    rotateX(var(--tilt-x, 0deg))
-    rotateY(var(--tilt-y, 0deg));
-  transition: transform var(--time-slow) var(--ease-out), box-shadow var(--time-slow) ease;
-  will-change: transform;
+    translate3d(0, var(--lift-y, 0px), 0);
+  transition: transform var(--time-fast) var(--ease-out), box-shadow var(--time-base) ease;
   cursor: pointer;
 }
 
@@ -844,19 +900,17 @@ blockquote p {
 .project-visual {
   position: absolute;
   inset: 0;
-  transform: scale(1.06) translate3d(calc(var(--card-x, 0px) * -0.25), calc(var(--card-y, 0px) * -0.25), 0);
-  transition: transform var(--time-slow) var(--ease-out), filter var(--time-slow) ease;
-  animation: visualDrift 12s ease-in-out infinite alternate;
+  transform: scale(1.06);
+  transition: transform var(--time-base) var(--ease-out);
 }
 
 .project-card:hover .project-visual {
   transform: scale(1.11);
-  filter: saturate(1.12);
 }
 
 .project-card:hover {
   --lift-y: -10px;
-  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.42);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.34);
 }
 
 .project-card:focus-visible {
@@ -887,7 +941,6 @@ blockquote p {
     radial-gradient(circle at 26% 28%, #41d7d2, transparent 24%),
     linear-gradient(120deg, rgba(243, 239, 228, 0.82) 0 8%, transparent 8% 16%, rgba(255, 91, 61, 0.72) 16% 26%, transparent 26%),
     #171a17;
-  animation-delay: -3s;
 }
 
 .visual-three {
@@ -896,7 +949,6 @@ blockquote p {
     conic-gradient(from 120deg at 72% 32%, #8c6cff, #ff5b3d, var(--signal-red), #41d7d2, #8c6cff),
     linear-gradient(180deg, #151511, #090906);
   background-blend-mode: screen, normal;
-  animation-delay: -6s;
 }
 
 .project-visual.has-image {
@@ -917,11 +969,10 @@ blockquote p {
   padding: 20px;
   border: 1px solid rgba(243, 239, 228, 0.36);
   border-radius: var(--radius);
-  background: rgba(8, 8, 6, 0.44);
+  background: rgba(8, 8, 6, 0.7);
   box-shadow: 0 32px 90px rgba(0, 0, 0, 0.36);
-  backdrop-filter: blur(12px);
   transform: translate(-50%, -50%) rotate(-5deg);
-  transition: transform var(--time-slow) var(--ease-out);
+  transition: transform var(--time-base) var(--ease-out);
 }
 
 .project-card:hover .mock-window {
@@ -1740,7 +1791,7 @@ blockquote.is-current {
   min-height: 100%;
   display: grid;
   grid-template-columns: 1.08fr 0.92fr;
-  align-content: center;
+  align-content: start;
   gap: clamp(20px, 3vw, 36px);
   padding: clamp(72px, 7vw, 110px) var(--pad) var(--pad);
   background:
@@ -1783,9 +1834,11 @@ blockquote.is-current {
 }
 
 .case-type {
+  display: block;
   color: rgba(8, 8, 6, 0.58);
   font-size: 12px;
   font-weight: 900;
+  line-height: 1.25;
   text-transform: uppercase;
 }
 
@@ -1799,13 +1852,14 @@ blockquote.is-current {
 
 .case-hero {
   align-content: end;
+  gap: 14px;
 }
 
 .case-panel h2 {
   margin: 0;
   font-family: "Arial Black", Inter, ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(20px, 7.5vw, 52px);
-  line-height: 0.82;
+  font-size: clamp(38px, 4.6vw, 52px);
+  line-height: 0.94;
   text-transform: uppercase;
 }
 
@@ -1813,8 +1867,8 @@ blockquote.is-current {
   max-width: 620px;
   margin: 0;
   color: rgba(8, 8, 6, 0.72);
-  font-size: clamp(18px, 2vw, 26px);
-  line-height: 1.45;
+  font-size: clamp(18px, 1.8vw, 23px);
+  line-height: 1.42;
 }
 
 .case-visual {
@@ -1924,10 +1978,18 @@ blockquote.is-current {
 .case-label,
 .case-meta span,
 .case-deliverables-label {
+  display: block;
   color: rgba(8, 8, 6, 0.58);
   font-size: 12px;
   font-weight: 900;
+  line-height: 1.25;
   text-transform: uppercase;
+}
+
+.case-breakdown article {
+  display: grid;
+  align-content: start;
+  gap: 8px;
 }
 
 .case-breakdown p {
@@ -1944,9 +2006,9 @@ blockquote.is-current {
 
 .case-meta div {
   display: grid;
-  gap: 8px;
-  min-height: 96px;
-  align-content: space-between;
+  gap: 12px;
+  min-height: 104px;
+  align-content: start;
   padding: 14px;
   border: 1px solid rgba(8, 8, 6, 0.16);
   border-radius: var(--radius);
@@ -1956,7 +2018,7 @@ blockquote.is-current {
 .case-meta strong {
   color: rgba(8, 8, 6, 0.82);
   font-size: clamp(14px, 1.45vw, 18px);
-  line-height: 1.22;
+  line-height: 1.3;
 }
 
 .case-deliverables ul {
@@ -1983,7 +2045,7 @@ blockquote.is-current {
 
 .case-result {
   display: grid;
-  gap: 18px;
+  gap: 10px;
   align-content: end;
   padding-top: 24px;
   border-top: 1px solid rgba(8, 8, 6, 0.2);
@@ -1991,8 +2053,8 @@ blockquote.is-current {
 
 .case-result strong {
   font-family: "Arial Black", Inter, ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(12px, 5vw, 20px);
-  line-height: 0.9;
+  font-size: clamp(18px, 2vw, 24px);
+  line-height: 1.05;
   text-transform: uppercase;
 }
 
@@ -2000,6 +2062,7 @@ blockquote.is-current {
   color: rgba(8, 8, 6, 0.58);
   font-size: 12px;
   font-weight: 900;
+  line-height: 1.25;
   text-transform: uppercase;
 }
 
@@ -2017,6 +2080,11 @@ blockquote.is-current {
   font-size: 12px;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.case-result .case-project-link,
+.case-result .case-cta {
+  margin-top: 4px;
 }
 
 .case-project-link {
@@ -2322,12 +2390,18 @@ blockquote.is-current {
 }
 
 .project-card[data-reveal] {
+  transition:
+    opacity var(--time-reveal) ease,
+    clip-path var(--time-reveal) var(--ease-out),
+    transform var(--time-fast) var(--ease-out),
+    box-shadow var(--time-base) ease;
   transform:
-    perspective(1000px)
-    translate3d(0, calc(var(--reveal-y, 0px) + var(--parallax-y, 0px) + var(--lift-y, 0px)), 0)
-    scale(var(--reveal-scale, 1))
-    rotateX(var(--tilt-x, 0deg))
-    rotateY(var(--tilt-y, 0deg));
+    translate3d(0, calc(var(--reveal-y, 0px) + var(--lift-y, 0px)), 0)
+    scale(var(--reveal-scale, 1));
+}
+
+.project-card[data-reveal].is-visible {
+  clip-path: none;
 }
 
 .project-grid [data-reveal]:nth-child(2) {
@@ -2361,16 +2435,6 @@ blockquote.is-current {
   }
 }
 
-@keyframes visualDrift {
-  from {
-    background-position: 0% 0%, 100% 12%, 0 0, 50% 50%;
-  }
-
-  to {
-    background-position: 18% 12%, 82% 28%, 44px 0, 50% 50%;
-  }
-}
-
 @keyframes loaderOrbit {
   to {
     transform: rotate(76deg) scale(1.12);
@@ -2384,6 +2448,12 @@ blockquote.is-current {
 
   to {
     transform: translateX(260%);
+  }
+}
+
+@keyframes workLoaderSpin {
+  to {
+    transform: rotate(1turn);
   }
 }
 
@@ -2681,12 +2751,31 @@ blockquote.is-current {
     min-height: 360px;
   }
 
+  .work-status {
+    min-height: 300px;
+  }
+
   .project-card h3 {
-    font-size: clamp(34px, 12vw, 58px);
+    order: 1;
+    font-size: clamp(34px, 11vw, 48px);
+    line-height: 0.92;
+    overflow-wrap: normal;
+    word-break: normal;
   }
 
   .project-meta {
-    gap: 8px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: end;
+    gap: 10px;
+    padding: 24px;
+  }
+
+  .project-meta span {
+    order: 2;
+    max-width: 28ch;
+    font-size: 12px;
+    line-height: 1.3;
   }
 
   .rule-item {
@@ -2880,7 +2969,8 @@ blockquote.is-current {
   }
 
   .case-panel h2 {
-    font-size: clamp(42px, 14vw, 74px);
+    font-size: clamp(38px, 11vw, 48px);
+    line-height: 0.96;
   }
 
   .case-visual {
@@ -2898,6 +2988,10 @@ blockquote.is-current {
 
   .case-meta {
     grid-template-columns: 1fr;
+  }
+
+  .case-meta div {
+    min-height: 0;
   }
 
   .case-copy {

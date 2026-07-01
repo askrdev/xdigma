@@ -1,38 +1,3 @@
-/* ==========================================================================
-   Desktop JS
-   Pointer, cursor, and magnetic-card interactions.
-   ========================================================================== */
-
-function setupMagneticCards() {
-  if (!hasFinePointer || prefersReducedMotion) return;
-
-  document.querySelectorAll("[data-magnetic]").forEach((card) => {
-    if (card.dataset.magneticBound === "true") return;
-    card.dataset.magneticBound = "true";
-
-    card.addEventListener("pointermove", (event) => {
-      const rect = card.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      const rx = ((y / rect.height) - 0.5) * -8;
-      const ry = ((x / rect.width) - 0.5) * 8;
-      const tx = (x / rect.width - 0.5) * 18;
-      const ty = (y / rect.height - 0.5) * 18;
-      card.style.setProperty("--tilt-x", `${rx}deg`);
-      card.style.setProperty("--tilt-y", `${ry}deg`);
-      card.style.setProperty("--card-x", `${tx}px`);
-      card.style.setProperty("--card-y", `${ty}px`);
-    });
-
-    card.addEventListener("pointerleave", () => {
-      card.style.setProperty("--tilt-x", "0deg");
-      card.style.setProperty("--tilt-y", "0deg");
-      card.style.setProperty("--card-x", "0px");
-      card.style.setProperty("--card-y", "0px");
-    });
-  });
-}
-
 function setupCursorStates() {
   if (!cursor || !cursorDot || !cursorRing || !cursorLabel || prefersReducedMotion || !hasFinePointer) return;
 
@@ -41,7 +6,7 @@ function setupCursorStates() {
   document.addEventListener("pointerdown", () => cursor.classList.add("is-pressed"));
   document.addEventListener("pointerup", () => cursor.classList.remove("is-pressed"));
 
-  const interactiveElements = document.querySelectorAll("a, button, [data-magnetic], [data-cursor]");
+  const interactiveElements = document.querySelectorAll("a, button, [data-cursor]");
   interactiveElements.forEach((element) => {
     if (element.dataset.cursorBound === "true") return;
     element.dataset.cursorBound = "true";
@@ -121,7 +86,6 @@ const attitudeGhost = document.querySelector(".attitude-ghost");
 const testimonialsSection = document.querySelector(".testimonials");
 const quoteRail = document.querySelector(".quote-rail");
 const quoteItems = Array.from(quoteRail?.querySelectorAll("blockquote") || []);
-const parallaxElements = Array.from(document.querySelectorAll("[data-parallax]"));
 const langToggle = document.querySelector(".lang-toggle");
 const contactEmail = "hello@xdigma.studio";
 const whatsappNumber = "628131770613";
@@ -142,7 +106,7 @@ let resizeTicking = false;
 let quoteProgress = 0;
 let quoteTargetProgress = 0;
 let quoteNeedsRender = true;
-let remoteWorkLoaded = false;
+let recentWorkLoading = false;
 const storage = {
   get(key) {
     try {
@@ -189,7 +153,9 @@ const i18n = {
     introBody: "No big agency overhead. No confusing packages. Just the work your brand actually needs.",
     recentWork: "Recent work",
     seeAll: "See all projects",
-    projectTypes: ["Brand platform / Web app", "E-commerce / Motion", "Editorial / UX"],
+    recentWorkLoading: "Loading projects",
+    recentWorkError: "Projects could not be loaded",
+    recentWorkRetry: "Try again",
     attitude: "How we think",
     rules: [
       ["No. 1", "Do the useful thing first.", "A good-looking brand that doesn't convert is just expensive decoration."],
@@ -278,13 +244,7 @@ const i18n = {
     caseDeliverables: "Deliverables",
     caseCta: "Talk to us about something similar",
     caseClose: "Close",
-    caseAriaClose: "Close case study",
-    caseAria: ["Open Selaras Lab case study", "Open Akar Goods case study", "Open Ruang Nada case study"],
-    cases: [
-      ["Selaras Lab", "Brand platform / Web app", "They had a strong product but no clear way to explain it online. We rebuilt the whole brand platform around how their audience actually thinks.", "68% engagement lift", "Good offer, no system to communicate it clearly.", "New brand architecture, story modules, and a launch experience that felt confident.", ["Brand narrative", "Responsive web system", "CMS-ready landing modules", "Launch motion direction"], "visual-one", "6 weeks", "Strategy, UX, UI, front-end", "HTML, CSS, JS, CMS-ready modules"],
-      ["Akar Goods", "E-commerce / Motion", "People were landing on the site but not buying. We looked at where they were dropping off and fixed it.", "41% faster checkout flow", "Rich product pages, but the buying path was slow and confusing on mobile.", "Cleaned up product hierarchy, reduced unnecessary steps, added subtle motion to help scanning.", ["Commerce UX", "Product page system", "Collection flow", "Checkout cleanup"], "visual-two", "4 weeks", "UX cleanup, motion, front-end", "Shopify flow, CSS motion, conversion UX"],
-      ["Ruang Nada", "Editorial / UX", "A publication with great content — but readers weren't sticking around long enough to find the good stuff.", "3.1x lead quality increase", "Strong writing, but the structure made it hard to discover high-value content.", "Redesigned the reading flow, added clearer entry points, built a publishing system the team could actually use.", ["Editorial UX", "Story templates", "Interaction system", "Publishing handoff"], "visual-three", "5 weeks", "Editorial UX, design system", "Modular templates, interaction rules, handoff docs"]
-    ]
+    caseAriaClose: "Close case study"
   },
   id: {
     htmlLang: "id",
@@ -312,7 +272,9 @@ const i18n = {
     introBody: "Gak ada overhead agency besar. Gak ada paket yang bikin bingung. Cuma kerjaan yang emang dibutuhkan brand lo.",
     recentWork: "Karya terbaru",
     seeAll: "Lihat semua project",
-    projectTypes: ["Platform brand / Web app", "E-commerce / Motion", "Editorial / UX"],
+    recentWorkLoading: "Lagi memuat project",
+    recentWorkError: "Project belum bisa dimuat",
+    recentWorkRetry: "Coba lagi",
     attitude: "Cara kami mikir",
     rules: [
       ["No. 1", "Kerjain yang berguna dulu.", "Brand yang keliatan bagus tapi gak convert itu cuma dekorasi mahal."],
@@ -397,13 +359,7 @@ const i18n = {
     caseDeliverables: "Deliverables",
     caseCta: "Ngobrol soal sesuatu yang mirip",
     caseClose: "Tutup",
-    caseAriaClose: "Tutup studi kasus",
-    caseAria: ["Buka studi kasus Selaras Lab", "Buka studi kasus Akar Goods", "Buka studi kasus Ruang Nada"],
-    cases: [
-      ["Selaras Lab", "Platform brand / Web app", "Mereka punya produk yang kuat tapi belum ada cara yang jelas buat jelasinnya secara online. Kami rebuild seluruh platform brand-nya sesuai cara audiens mereka beneran mikir.", "engagement naik 68%", "Offer bagus, tapi belum ada sistem buat ngomunikasiin dengan jelas.", "Arsitektur brand baru, modul cerita, dan pengalaman launch yang terasa yakin.", ["Narasi brand", "Sistem web responsif", "Modul landing siap CMS", "Arah motion launch"], "visual-one", "6 minggu", "Strategi, UX, UI, front-end", "HTML, CSS, JS, modul siap CMS"],
-      ["Akar Goods", "E-commerce / Motion", "Orang-orang dateng ke situsnya tapi gak beli. Kami cari tau di mana mereka drop off dan benerin itu.", "checkout 41% lebih cepat", "Halaman produk kaya visual, tapi jalur belinya lambat dan membingungkan di mobile.", "Beresin hierarki produk, kurangin langkah yang gak perlu, tambah motion halus buat scanning lebih mudah.", ["UX commerce", "Sistem halaman produk", "Alur koleksi", "Pembersihan checkout"], "visual-two", "4 minggu", "UX cleanup, motion, front-end", "Shopify flow, CSS motion, conversion UX"],
-      ["Ruang Nada", "Editorial / UX", "Publikasi dengan konten bagus — tapi pembaca gak betah lama-lama buat nemuin konten yang worth it.", "kualitas lead naik 3.1x", "Tulisannya kuat, tapi strukturnya bikin konten bernilai tinggi susah ditemuin.", "Redesign reading flow, tambah entry point yang lebih jelas, bangun sistem publishing yang bisa beneran dipakai tim.", ["UX editorial", "Template cerita", "Sistem interaksi", "Handoff publishing"], "visual-three", "5 minggu", "UX editorial, design system", "Template modular, aturan interaksi, docs handoff"]
-    ]
+    caseAriaClose: "Tutup studi kasus"
   }
 };
 
@@ -664,8 +620,6 @@ function createProjectCard(project, index) {
   const card = document.createElement("article");
   card.className = `project-card ${index === 0 ? "large " : ""}is-visible`;
   card.dataset.reveal = "";
-  card.dataset.magnetic = "";
-  card.dataset.parallax = "";
   card.dataset.cursor = currentLang === "id" ? "Lihat" : "View";
   card.dataset.caseTitle = project.title;
   card.dataset.caseType = project.type;
@@ -707,19 +661,56 @@ function renderRecentWork(projects) {
   const grid = document.querySelector(".project-grid");
   if (!grid || !projects.length) return;
 
+  grid.classList.remove("is-status");
+  grid.setAttribute("aria-busy", "false");
   grid.replaceChildren(...projects.map(createProjectCard));
-  remoteWorkLoaded = true;
   lastCaseTrigger = null;
-  parallaxElements.length = 0;
-  parallaxElements.push(...document.querySelectorAll("[data-parallax]"));
-  setupMagneticCards();
   setupCursorStates();
   updateScrollMotion();
 }
 
-async function loadRecentWorkFromGoogleSheet() {
-  if (!recentWorkSource.url) return;
+function renderRecentWorkStatus(state) {
+  const grid = document.querySelector(".project-grid");
+  if (!grid) return;
 
+  const t = i18n[currentLang] || i18n.en;
+  const status = document.createElement("div");
+  const marker = document.createElement("span");
+  const label = document.createElement("strong");
+
+  grid.classList.add("is-status");
+  grid.setAttribute("aria-busy", String(state === "loading"));
+  status.className = `work-status is-${state}`;
+  status.setAttribute("role", state === "error" ? "alert" : "status");
+  marker.className = "work-loader-mark";
+  marker.setAttribute("aria-hidden", "true");
+  label.className = "work-status-label";
+  label.textContent = state === "error" ? t.recentWorkError : t.recentWorkLoading;
+  status.append(marker, label);
+
+  if (state === "error") {
+    const retry = document.createElement("button");
+    retry.className = "work-retry";
+    retry.type = "button";
+    retry.dataset.cursor = currentLang === "id" ? "Ulang" : "Retry";
+    retry.textContent = t.recentWorkRetry;
+    retry.addEventListener("click", loadRecentWorkFromGoogleSheet);
+    status.append(retry);
+  }
+
+  grid.replaceChildren(status);
+  setupCursorStates();
+}
+
+async function loadRecentWorkFromGoogleSheet() {
+  if (recentWorkLoading) return;
+  if (!recentWorkSource.url) {
+    renderRecentWorkStatus("error");
+    return;
+  }
+
+  recentWorkLoading = true;
+  renderRecentWorkStatus("loading");
   try {
     const response = await fetch(recentWorkSource.url, { cache: "no-store" });
     if (!response.ok) throw new Error(`Recent work source returned ${response.status}`);
@@ -742,10 +733,13 @@ async function loadRecentWorkFromGoogleSheet() {
       }))
       .slice(0, recentWorkSource.limit);
 
+    if (!projects.length) throw new Error("Recent work source returned no published projects");
     renderRecentWork(projects);
   } catch (error) {
     console.warn("Recent work could not be loaded:", error);
-    /* Keep fallback projects visible if the external sheet cannot be loaded. */
+    renderRecentWorkStatus("error");
+  } finally {
+    recentWorkLoading = false;
   }
 }
 
@@ -847,7 +841,11 @@ function applyLanguage(lang) {
   setText(".intro-text p:last-child", t.introBody);
   setText(".work .section-heading h2", t.recentWork);
   setText(".work .section-heading a", t.seeAll);
-  if (!remoteWorkLoaded) setIndexedText(".project-meta span", t.projectTypes);
+  const workStatus = document.querySelector(".work-status");
+  if (workStatus) {
+    setText(".work-status-label", workStatus.classList.contains("is-error") ? t.recentWorkError : t.recentWorkLoading);
+    setText(".work-retry", t.recentWorkRetry);
+  }
   setText(".rules .section-label span:nth-child(2)", t.attitude);
   setIndexedText(".attitude-ghost span", [t.attitude, t.attitude, t.attitude]);
 
@@ -954,22 +952,7 @@ function applyLanguage(lang) {
   document.querySelector(".case-close")?.setAttribute("aria-label", t.caseAriaClose);
 
   document.querySelectorAll(".project-card[data-case-title]").forEach((card, index) => {
-    if (!remoteWorkLoaded) {
-      const item = t.cases[index];
-      if (!item) return;
-      card.dataset.caseTitle = item[0];
-      card.dataset.caseType = item[1];
-      card.dataset.caseCopy = item[2];
-      card.dataset.caseResult = item[3];
-      card.dataset.caseChallenge = item[4];
-      card.dataset.caseSolution = item[5];
-      card.dataset.caseDeliverables = JSON.stringify(item[6]);
-      card.dataset.caseVisual = item[7];
-      card.dataset.caseTimeline = item[8];
-      card.dataset.caseRole = item[9];
-      card.dataset.caseStack = item[10];
-      card.setAttribute("aria-label", t.caseAria[index]);
-    }
+    card.setAttribute("aria-label", `${lang === "id" ? "Buka studi kasus" : "Open"} ${card.dataset.caseTitle}`);
     card.dataset.cursor = lang === "id" ? "Lihat" : "View";
   });
   document.querySelectorAll(".service-list button").forEach((item) => {
@@ -1055,15 +1038,6 @@ function updateScrollMotion() {
   if (attitudeGhost) {
     attitudeGhost.style.setProperty("--attitude-x", `${-10 + ratio * 28}%`);
     attitudeGhost.style.setProperty("--attitude-y", `${Math.sin(ratio * Math.PI) * 30}px`);
-  }
-
-  if (hasFinePointer && !shouldReduceRuntimeMotion) {
-    parallaxElements.forEach((element) => {
-      const rect = element.getBoundingClientRect();
-      const center = rect.top + rect.height / 2 - window.innerHeight / 2;
-      const offset = Math.max(-36, Math.min(36, center * -0.035));
-      element.style.setProperty("--parallax-y", `${offset}px`);
-    });
   }
 
   if (contact) {
@@ -1541,7 +1515,6 @@ window.addEventListener("pointermove", (event) => {
 setupLanguageToggle();
 setupLoader();
 setupHeroRotator();
-setupMagneticCards();
 setupCursorStates();
 setupCounters();
 setupQuoteRail();
