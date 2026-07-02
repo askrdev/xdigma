@@ -123,7 +123,9 @@ Useful notes:
 - Plain domains such as `raalmuin.sch.id` are linked automatically; `result url` is available when the displayed result text is not a domain.
 - Add a project URL in `website`, `instagram`, `social`, or `link` to show a link in the case-study detail.
 - `link label` is optional, for example `Website`, `Instagram`, or `Visit school site`.
-- `published` can be left blank or set to `yes`; use `no`, `false`, or `0` to hide a row.
+- The bundled Apps Script only exposes rows whose `published` value is `yes`, `true`, `1`, `ya`, `iya`, or `published`. Blank values stay private.
+- New form submissions default to `Published = No`; change the value to `Yes` after reviewing the project.
+- The Apps Script response contains only the public project fields used by the website; timestamps, draft rows, and unknown columns are omitted.
 
 Publish the sheet to the web as CSV or deploy the Apps Script Web App with access set to "Anyone", then paste the public URL into `script.js`:
 
