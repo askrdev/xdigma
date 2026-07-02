@@ -91,7 +91,7 @@ const contactEmail = "hello@xdigma.studio";
 const whatsappNumber = "628131770613";
 // Paste a published Google Sheet CSV URL or Apps Script Web App URL here.
 const recentWorkSource = {
-  url: "https://script.google.com/macros/s/AKfycbzo3wbKcu2KeN7hg8ZT9lrx1_gtOd8mjnDbP1TsIWXybpUNuDCFwYOqPD7XlWnrOA2jEA/exec",
+  url: "https://script.google.com/macros/s/AKfycbzTATfBqtyQw-18nTmxXbjgBd73fkYR-wWKhybNFbaGR8powqDzjPbKEPL4vTQASlkGWQ/exec",
   limit: 3
 };
 let particles = [];
@@ -615,45 +615,150 @@ function getVisualClass(row, index) {
   return `visual-${["one", "two", "three"][index % 3]}`;
 }
 
+function getPublicImageUrl(value) {
+  const rawUrl = String(value || "").trim();
+  if (!rawUrl) return "";
+
+  const driveMatch = rawUrl.match(/drive\.google\.com\/file\/d\/([^/?#]+)/i);
+  const driveId = driveMatch?.[1] || (() => {
+    try {
+      const url = new URL(rawUrl);
+      return /drive\.google\.com$/i.test(url.hostname) ? url.searchParams.get("id") : "";
+    } catch {
+      return "";
+    }
+  })();
+
+  if (driveId) {
+    return `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveId)}&sz=w1600`;
+  }
+
+  try {
+    const url = new URL(rawUrl);
+    return /^https?:$/.test(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
+function getImagePosition(value) {
+  const position = String(value || "").trim().toLowerCase();
+  if (!position) return "center";
+
+  const keywordParts = position.split(/\s+/);
+  const allowedKeywords = new Set(["center", "top", "right", "bottom", "left"]);
+  if (keywordParts.length <= 2 && keywordParts.every((part) => allowedKeywords.has(part))) {
+    return position;
+  }
+
+  const percentageParts = position.match(/^(\d{1,3})%\s+(\d{1,3})%$/);
+  if (percentageParts) {
+    const x = Math.min(100, Number(percentageParts[1]));
+    const y = Math.min(100, Number(percentageParts[2]));
+    return `${x}% ${y}%`;
+  }
+
+  return "center";
+}
+
+function getImageFit(value) {
+  return String(value || "").trim().toLowerCase() === "contain" ? "contain" : "cover";
+}
+
+function getSafeHttpUrl(value) {
+  try {
+    const url = new URL(String(value || "").trim());
+    return /^https?:$/.test(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
+function parseLinkedText(value) {
+  const rawValue = String(value || "").trim();
+  const markdownLink = rawValue.match(/^\[([^\]]+)\]\((.+)\)$/);
+
+  if (markdownLink) {
+    const url = getSafeHttpUrl(markdownLink[2]);
+    if (url) return { text: markdownLink[1].trim() || url, url };
+  }
+
+  const directUrl = getSafeHttpUrl(rawValue);
+  const domainUrl = !directUrl && /^(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)+(?:[/?#].*)?$/i.test(rawValue)
+    ? getSafeHttpUrl(`https://${rawValue}`)
+    : "";
+  const url = directUrl || domainUrl;
+
+  return {
+    text: url ? rawValue.replace(/^https?:\/\//i, "").replace(/\/$/, "") : rawValue,
+    url
+  };
+}
+
+function applyProjectCardLanguage(card, lang) {
+  const locales = card.projectLocales;
+  if (!locales) return;
+
+  const locale = locales[lang] || locales.id || locales.en;
+  if (!locale) return;
+
+  card.dataset.caseTitle = locale.title;
+  card.dataset.caseType = locale.type;
+  card.dataset.caseCopy = locale.copy;
+  card.dataset.caseResult = locale.result;
+  card.dataset.caseChallenge = locale.challenge;
+  card.dataset.caseSolution = locale.solution;
+  card.dataset.caseDeliverables = JSON.stringify(locale.deliverables);
+  card.dataset.caseTimeline = locale.timeline;
+  card.dataset.caseRole = locale.role;
+  card.dataset.caseStack = locale.stack;
+  card.dataset.cursor = lang === "id" ? "Lihat" : "View";
+  card.setAttribute("aria-label", `${lang === "id" ? "Buka studi kasus" : "Open"} ${locale.title}`);
+
+  const title = card.querySelector(".project-meta h3");
+  const type = card.querySelector(".project-meta span");
+  const mockTitle = card.querySelector(".mock-window strong");
+  if (title) title.textContent = locale.title;
+  if (type) type.textContent = locale.type;
+  if (mockTitle) mockTitle.textContent = locale.mockLabel || locale.title.split(/\s+/)[0] || locale.title;
+}
+
 function createProjectCard(project, index) {
   const visualClass = project.visual;
   const card = document.createElement("article");
   card.className = `project-card ${index === 0 ? "large " : ""}is-visible`;
   card.dataset.reveal = "";
-  card.dataset.cursor = currentLang === "id" ? "Lihat" : "View";
-  card.dataset.caseTitle = project.title;
-  card.dataset.caseType = project.type;
-  card.dataset.caseCopy = project.copy;
-  card.dataset.caseResult = project.result;
-  card.dataset.caseChallenge = project.challenge;
-  card.dataset.caseSolution = project.solution;
-  card.dataset.caseDeliverables = JSON.stringify(project.deliverables);
+  card.projectLocales = project.locales;
+  card.dataset.caseResultUrl = project.resultUrl;
   card.dataset.caseVisual = visualClass;
-  card.dataset.caseTimeline = project.timeline;
-  card.dataset.caseRole = project.role;
-  card.dataset.caseStack = project.stack;
+  card.dataset.caseImage = project.image;
+  card.dataset.caseImagePosition = project.imagePosition;
+  card.dataset.caseImageFit = project.imageFit;
   card.tabIndex = 0;
   card.setAttribute("role", "button");
-  card.setAttribute("aria-label", `${currentLang === "id" ? "Buka studi kasus" : "Open"} ${project.title}`);
 
   const visual = document.createElement("div");
   visual.className = `project-visual ${visualClass}`;
+  if (project.image) {
+    visual.classList.add("has-image");
+    visual.style.setProperty("--project-image", `url("${project.image}")`);
+    visual.style.setProperty("--project-image-position", project.imagePosition);
+    visual.style.setProperty("--project-image-fit", project.imageFit);
+  }
   const mock = document.createElement("div");
   mock.className = "mock-window";
   mock.append(document.createElement("span"), document.createElement("span"), document.createElement("span"));
   const mockTitle = document.createElement("strong");
-  mockTitle.textContent = project.mockLabel || project.title.split(/\s+/)[0] || project.title;
   mock.append(mockTitle, document.createElement("i"));
   visual.append(mock);
 
   const meta = document.createElement("div");
   meta.className = "project-meta";
   const type = document.createElement("span");
-  type.textContent = project.type;
   const title = document.createElement("h3");
-  title.textContent = project.title;
   meta.append(type, title);
   card.append(visual, meta);
+  applyProjectCardLanguage(card, currentLang);
   return card;
 }
 
@@ -717,20 +822,76 @@ async function loadRecentWorkFromGoogleSheet() {
     const rows = rowsFromRemoteText(await response.text(), response.headers.get("content-type") || "");
     const projects = rows
       .filter((row) => !/^no|false|0$/i.test(getField(row, ["published", "publish", "show"])))
-      .map((row, index) => ({
-        title: getField(row, ["title", "project title", "nama project", "name"]) || `Project ${index + 1}`,
-        type: getField(row, ["type", "project type", "kategori", "category"]) || "Project",
-        copy: getField(row, ["copy", "short summary", "summary", "description", "deskripsi"]) || "A recent Xdigma project.",
-        result: getField(row, ["result", "hasil", "metric"]) || "Selected work",
-        challenge: getField(row, ["challenge", "tantangan"]) || "Details are being prepared.",
-        solution: getField(row, ["solution", "solusi"]) || "Details are being prepared.",
-        deliverables: getListField(row, ["deliverables", "output", "scope"]),
-        visual: getVisualClass(row, index),
-        timeline: getField(row, ["timeline", "waktu"]) || "-",
-        role: getField(row, ["role", "peran"]) || "-",
-        stack: getField(row, ["stack", "tools"]) || "-",
-        mockLabel: getField(row, ["mock label", "label"])
-      }))
+      .map((row, index) => {
+        const idResult = parseLinkedText(getField(row, ["result", "hasil", "metric"]) || "Selected work");
+        const enResultValue = getField(row, ["result en", "result english", "english result"]);
+        const enResult = enResultValue ? parseLinkedText(enResultValue) : idResult;
+        const explicitResultUrl = getSafeHttpUrl(getField(row, ["result url", "hasil url"]));
+        const idDeliverables = getListField(row, ["deliverables", "output", "scope"]);
+        const enDeliverables = getListField(row, [
+          "deliverables en",
+          "deliverables english",
+          "english deliverables"
+        ]);
+        const idLocale = {
+          title: getField(row, ["title", "project title", "nama project", "name"]) || `Project ${index + 1}`,
+          type: getField(row, ["type", "project type", "kategori", "category"]) || "Project",
+          copy: getField(row, ["copy", "the situation", "short summary", "summary", "description", "deskripsi"]) || "Detail project sedang disiapkan.",
+          result: idResult.text,
+          challenge: getField(row, ["challenge", "tantangan"]) || "Detail sedang disiapkan.",
+          solution: getField(row, ["solution", "solusi"]) || "Detail sedang disiapkan.",
+          deliverables: idDeliverables,
+          timeline: getField(row, ["timeline", "waktu"]) || "-",
+          role: getField(row, ["role", "peran"]) || "-",
+          stack: getField(row, ["stack", "tools"]) || "-",
+          mockLabel: getField(row, ["mock label", "label"])
+        };
+        const enLocale = {
+          title: getField(row, ["title en", "title english", "english title"]) || idLocale.title,
+          type: getField(row, ["type en", "project type en", "type english", "english type"]) || idLocale.type,
+          copy: getField(row, [
+            "the situation en",
+            "copy en",
+            "short summary en",
+            "summary en",
+            "description en",
+            "english summary"
+          ]) || idLocale.copy,
+          result: enResult.text,
+          challenge: getField(row, ["challenge en", "challenge english", "english challenge"]) || idLocale.challenge,
+          solution: getField(row, ["solution en", "solution english", "english solution"]) || idLocale.solution,
+          deliverables: enDeliverables.length ? enDeliverables : idLocale.deliverables,
+          timeline: getField(row, ["timeline en", "timeline english", "english timeline"]) || idLocale.timeline,
+          role: getField(row, ["role en", "role english", "english role"]) || idLocale.role,
+          stack: getField(row, ["stack en", "stack english", "english stack"]) || idLocale.stack,
+          mockLabel: getField(row, ["mock label en", "mock label english"]) || idLocale.mockLabel
+        };
+        return {
+          locales: {
+            id: idLocale,
+            en: enLocale
+          },
+          resultUrl: enResult.url || idResult.url || explicitResultUrl,
+          visual: getVisualClass(row, index),
+          image: getPublicImageUrl(getField(row, [
+            "background image",
+            "background image url",
+            "image",
+            "image url",
+            "cover image",
+            "thumbnail"
+          ])),
+          imagePosition: getImagePosition(getField(row, [
+            "background position",
+            "image position",
+            "focal point"
+          ])),
+          imageFit: getImageFit(getField(row, [
+            "background fit",
+            "image fit"
+          ]))
+        };
+      })
       .slice(0, recentWorkSource.limit);
 
     if (!projects.length) throw new Error("Recent work source returned no published projects");
@@ -951,9 +1112,8 @@ function applyLanguage(lang) {
   setText(".case-close", t.caseClose);
   document.querySelector(".case-close")?.setAttribute("aria-label", t.caseAriaClose);
 
-  document.querySelectorAll(".project-card[data-case-title]").forEach((card, index) => {
-    card.setAttribute("aria-label", `${lang === "id" ? "Buka studi kasus" : "Open"} ${card.dataset.caseTitle}`);
-    card.dataset.cursor = lang === "id" ? "Lihat" : "View";
+  document.querySelectorAll(".project-card[data-case-title]").forEach((card) => {
+    applyProjectCardLanguage(card, lang);
   });
   document.querySelectorAll(".service-list button").forEach((item) => {
     item.dataset.cursor = lang === "id" ? "Buka" : "Open";
@@ -1391,14 +1551,34 @@ function renderCaseModal(card) {
   caseModal.querySelector(".case-copy").textContent = card.dataset.caseCopy || "";
   caseModal.querySelector(".case-challenge").textContent = card.dataset.caseChallenge || "";
   caseModal.querySelector(".case-solution").textContent = card.dataset.caseSolution || "";
-  caseModal.querySelector(".case-result strong").textContent = card.dataset.caseResult || "";
+  const resultElement = caseModal.querySelector(".case-result strong");
+  const resultUrl = getSafeHttpUrl(card.dataset.caseResultUrl);
+  if (resultElement && resultUrl) {
+    const link = document.createElement("a");
+    link.href = resultUrl;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = card.dataset.caseResult || resultUrl;
+    resultElement.replaceChildren(link);
+  } else if (resultElement) {
+    resultElement.textContent = card.dataset.caseResult || "";
+  }
   caseModal.querySelector(".case-timeline").textContent = card.dataset.caseTimeline || "";
   caseModal.querySelector(".case-role").textContent = card.dataset.caseRole || "";
   caseModal.querySelector(".case-stack").textContent = card.dataset.caseStack || "";
   renderList(caseModal.querySelector(".case-deliverables ul"), deliverables);
 
-  visual?.classList.remove("visual-one", "visual-two", "visual-three");
+  visual?.classList.remove("visual-one", "visual-two", "visual-three", "has-image");
+  visual?.style.removeProperty("--case-image");
+  visual?.style.removeProperty("--case-image-position");
+  visual?.style.removeProperty("--case-image-fit");
   if (card.dataset.caseVisual) visual?.classList.add(card.dataset.caseVisual);
+  if (card.dataset.caseImage) {
+    visual?.classList.add("has-image");
+    visual?.style.setProperty("--case-image", `url("${card.dataset.caseImage}")`);
+    visual?.style.setProperty("--case-image-position", card.dataset.caseImagePosition || "center");
+    visual?.style.setProperty("--case-image-fit", card.dataset.caseImageFit || "cover");
+  }
   if (visualTitle) visualTitle.textContent = card.dataset.caseTitle || "";
 }
 

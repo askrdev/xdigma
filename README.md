@@ -70,7 +70,7 @@ For production social previews, update Open Graph and Twitter image URLs in `ind
 
 ## Updating Recent Work From Google Form
 
-The Recent Work section has fallback projects in `index.html`, but it can also load projects from a public Google Sheet CSV or an Apps Script Web App that returns JSON.
+The Recent Work section loads projects from a public Google Sheet CSV or an Apps Script Web App that returns JSON.
 
 1. Create a Google Form for project updates.
 2. Connect the form responses to Google Sheets.
@@ -85,7 +85,19 @@ challenge
 solution
 deliverables
 visual
-image
+background image
+background position
+background fit
+title en
+type en
+the situation en
+result en
+challenge en
+solution en
+deliverables en
+timeline en
+role en
+stack en
 website
 instagram
 link label
@@ -101,7 +113,14 @@ Useful notes:
 - `title`, `type`, `copy`, and `result` are the most important fields.
 - `deliverables` can be separated with `|`, `;`, or new lines.
 - `visual` should be one of `visual-one`, `visual-two`, or `visual-three`.
-- `image` can be an `https://` image URL for the card and case-study background.
+- `background image` can be a public `https://` image URL or a publicly shared Google Drive file link.
+- Leave `background image` empty to use the selected `visual` gradient.
+- `background position` controls the crop focus, for example `center`, `top`, or `50% 25%`.
+- `background fit` accepts `cover` (default) or `contain`.
+- English detail fields can be supplied with the `en` suffix, or generated automatically by the Apps Script example in `apps-script/Code.gs`.
+- The Apps Script translation cache keeps the Sheet single-language and avoids translating unchanged text on every page load.
+- `result` supports clickable Markdown links, for example `[raalmuin.sch.id](https://raalmuin.sch.id/)`.
+- Plain domains such as `raalmuin.sch.id` are linked automatically; `result url` is available when the displayed result text is not a domain.
 - Add a project URL in `website`, `instagram`, `social`, or `link` to show a link in the case-study detail.
 - `link label` is optional, for example `Website`, `Instagram`, or `Visit school site`.
 - `published` can be left blank or set to `yes`; use `no`, `false`, or `0` to hide a row.
@@ -115,7 +134,7 @@ const recentWorkSource = {
 };
 ```
 
-The site will keep showing the fallback projects if the URL is empty, private, returns an access-denied HTML page, or cannot load. Check the browser console for a `Recent work could not be loaded` warning when debugging.
+The site will show a retry state if the URL is empty, private, returns an access-denied HTML page, or cannot load. Check the browser console for a `Recent work could not be loaded` warning when debugging.
 
 ## Notes
 

@@ -953,10 +953,15 @@ blockquote p {
 
 .project-visual.has-image {
   background:
-    linear-gradient(180deg, rgba(8, 8, 6, 0.1), rgba(8, 8, 6, 0.36)),
+    linear-gradient(180deg, rgba(8, 8, 6, 0.04), rgba(8, 8, 6, 0.34)),
     var(--project-image);
-  background-position: center;
-  background-size: cover;
+  background-position: var(--project-image-position, center);
+  background-repeat: no-repeat;
+  background-size: var(--project-image-fit, cover);
+}
+
+.project-visual.has-image .mock-window {
+  display: none;
 }
 
 .mock-window {
@@ -1904,8 +1909,13 @@ blockquote.is-current {
   background:
     linear-gradient(180deg, rgba(8, 8, 6, 0.08), rgba(8, 8, 6, 0.38)),
     var(--case-image);
-  background-position: center;
-  background-size: cover;
+  background-position: var(--case-image-position, center);
+  background-repeat: no-repeat;
+  background-size: var(--case-image-fit, cover);
+}
+
+.case-visual.has-image .case-visual-window {
+  display: none;
 }
 
 .case-visual::after {
@@ -2056,6 +2066,19 @@ blockquote.is-current {
   font-size: clamp(18px, 2vw, 24px);
   line-height: 1.05;
   text-transform: uppercase;
+}
+
+.case-result strong a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--signal-red);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 5px;
+}
+
+.case-result strong a:hover,
+.case-result strong a:focus-visible {
+  color: var(--signal-red);
 }
 
 .case-result span {
