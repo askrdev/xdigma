@@ -44,7 +44,7 @@ function setupMobileMenu() {
     menu.classList.toggle("is-open", isOpen);
     menu.setAttribute("aria-hidden", String(!isOpen));
     toggle.setAttribute("aria-expanded", String(isOpen));
-    toggle.querySelector("span").textContent = isOpen ? t.close : t.menu;
+    toggle.textContent = isOpen ? t.close : t.menu;
   }
 
   toggle.addEventListener("click", () => {
@@ -83,9 +83,6 @@ const serviceModal = document.querySelector(".service-modal");
 const backTop = document.querySelector(".back-top");
 const loaderCount = document.querySelector("[data-loader-count]");
 const attitudeGhost = document.querySelector(".attitude-ghost");
-const testimonialsSection = document.querySelector(".testimonials");
-const quoteRail = document.querySelector(".quote-rail");
-const quoteItems = Array.from(quoteRail?.querySelectorAll("blockquote") || []);
 const langToggle = document.querySelector(".lang-toggle");
 const contactEmail = "hello@xdigma.studio";
 const whatsappNumber = "628131770613";
@@ -103,10 +100,8 @@ let lastServiceTrigger = null;
 let isHeroCanvasVisible = true;
 let scrollTicking = false;
 let resizeTicking = false;
-let quoteProgress = 0;
-let quoteTargetProgress = 0;
-let quoteNeedsRender = true;
 let recentWorkLoading = false;
+let latestProjectLocales = null;
 const storage = {
   get(key) {
     try {
@@ -126,242 +121,11 @@ const storage = {
 const savedLang = storage.get("xdigma-lang");
 let currentLang = savedLang || "en";
 
-const i18n = {
-  en: {
-    htmlLang: "en",
-    title: "Xdigma — We Help Your Brand Get Found and Trusted Online",
-    description: "Digital marketing for UMKM and growing brands. We handle the strategy, websites, SEO, and content so you don't have to figure it all out alone.",
-    skip: "Skip to content",
-    loader: "Loading ecosystem",
-    backTop: "Top",
-    menu: "Menu",
-    close: "Close",
-    nav: ["Work", "Services", "Studio", "Contact"],
-    navCta: "Let's Talk",
-    whatsappMessage: "Hi Xdigma, I want to grow my brand online.",
-    whatsappLabel: "WhatsApp 0812 2950 7211",
-    heroKicker: ["Digital marketing studio", "Jakarta / Remote"],
-    eyebrow: "Your business is running. Let's make sure people can find it.",
-    rotator: ["Get found online", "Look the part", "Grow steadily"],
-    heroTitle: "We help brands show up in the right place, at the right time.",
-    latestProject: "Latest project",
-    heroSide: "From branding to SEO — we figure out what your brand needs and get it done. You'll always know the price before we start.",
-    marquee: ["Identity", "Experience", "Motion", "Growth", "Identity", "Experience", "Motion", "Growth"],
-    scroll: "Scroll",
-    aboutLabel: "About",
-    introLead: "We're a small digital marketing studio that works closely with founders and growing businesses.",
-    introBody: "No big agency overhead. No confusing packages. Just the work your brand actually needs.",
-    recentWork: "Recent work",
-    seeAll: "See all projects",
-    recentWorkLoading: "Loading projects",
-    recentWorkError: "Projects could not be loaded",
-    recentWorkRetry: "Try again",
-    attitude: "How we think",
-    rules: [
-      ["No. 1", "Do the useful thing first.", "A good-looking brand that doesn't convert is just expensive decoration."],
-      ["No. 2", "Don't overcomplicate it.", "Most brands don't need more — they need the right things done well."],
-      ["No. 3", "Launching is just the start.", "We stick around to see what's working and what needs adjusting."],
-      ["No. 4", "Be honest about what we don't know.", "We'd rather say 'let's figure it out' than pretend we have all the answers."],
-      ["No. 5", "Leave things better than we found them.", "Clean work, documented handoffs — so you're never stuck without us."]
-    ],
-    partnershipTitle: "Trusted by them",
-    partnershipBody: "These brands believed first — now it's your turn to see for yourself.",
-    servicesTitle: "What we do",
-    servicesBody: "Pick what you need. We'll tell you honestly if something else makes more sense for your situation.",
-    services: ["Website design", "Front-end development", "Motion and interaction", "Shopify and conversion", "SEO and content"],
-    serviceDescriptions: [
-      "A website that looks like your brand and makes it easy for visitors to take action.",
-      "Clean, fast, and built to last — with proper handoff so your team can manage it.",
-      "The small details that make browsing feel smooth and intentional.",
-      "Built around how people actually shop — less friction, more completed purchases.",
-      "Help people find you on Google, and give them a reason to stay."
-    ],
-    serviceIncludesLabel: "Includes",
-    serviceCta: "Ask about this",
-    serviceClose: "Close",
-    serviceAriaClose: "Close service detail",
-    serviceDetails: [
-      ["Website design", "We design websites that tell your story clearly and make the next step obvious for visitors.", ["Discovery and positioning", "Information architecture", "Wireframes and user flows", "Responsive visual design", "Component-ready design system"]],
-      ["Front-end development", "Websites built properly — fast, accessible, and easy to update without breaking anything.", ["Responsive HTML/CSS/JS", "Reusable component patterns", "Interaction implementation", "Performance tuning", "Accessibility pass"]],
-      ["Motion and interaction", "Subtle movement that makes the experience feel considered, not just decorated.", ["Loader and page motion", "Hover and cursor systems", "Scroll-based storytelling", "Canvas/CSS motion", "Reduced-motion alternatives"]],
-      ["Shopify and conversion", "We find where people drop off and fix it — so more visitors actually complete their purchase.", ["Product page structure", "Collection UX", "Merchandising modules", "Checkout path cleanup", "Conversion experiment ideas"]],
-      ["SEO and content", "We help your brand show up when people search for what you offer — and keep showing up.", ["Content architecture", "Landing-page templates", "Metadata structure", "Internal linking patterns", "Editorial component rules"]]
-    ],
-    selectedCapability: "Selected capability",
-    processTitle: "How a project usually goes",
-    processBody: "Simple, and we walk you through every part.",
-    process: [
-      ["We get to know your business", "What you sell, who you're trying to reach, and what's not working yet."],
-      ["We plan before we build", "No jumping straight into design — we agree on direction first so nothing gets wasted."],
-      ["We build, launch, and follow up", "After launch, we check in to see what the numbers are saying."]
-    ],
-    metricsTitle: "A few things we've helped clients achieve.",
-    metricLabels: ["avg. engagement lift", "lead quality increase", "faster checkout flow", "prototype to launch"],
-    metricTicker: ["34% bounce rate", "20k sign ups", "82% bookings increase", "396% traffic increase", "113% sales increase", "37% conversion rate"],
-    awardsTitle: "Terlatih dan tersertifikasi.",
-    awards: [
-      "Google Analytics Certified",
-      "Meta Blueprint Certified", 
-      "Google Ads Certified"
-    ],
-    clientsSay: "What clients say",
-    quoteButtons: ["Prev", "Next"],
-    quotes: [
-      ["Honestly didn't think a studio this size could pull it off. Happy to be wrong.", "Maya R., Founder / Akar Goods"],
-      ["They explained every decision. That made a huge difference for us.", "Rafi D., Director / Ruang Nada"],
-      ["First agency where the process actually matched what they promised upfront.", "Nadia P., CMO / Selaras Lab"],
-      ["We could actually maintain everything after handoff. That almost never happens.", "Arman K., Product Lead / Kinora"]
-    ],
-    availabilityKicker: "Availability",
-    availabilityTitle: "Every project is priced around what you actually need.",
-    availabilityLink: ["Tell us your situation first"," we'll give you an honest number before you commit to anything."],
-    contactKicker: "Not sure where to start? That's fine — most people aren't.",
-    contactTitle: "Tell us what's going on with your brand. We'll take it from there.",
-    contactForm: {
-      title: "Send us a brief",
-      subtitle: "Or just describe what's on your mind.",
-      fields: ["Name", "Email", "Project type", "Timeline", "What's going on?"],
-      placeholders: ["Your name", "you@brand.com", "No need to have it figured out — just tell us the situation."],
-      emptyOptions: ["Choose one", "Choose one"],
-      types: ["Website redesign", "New brand site", "E-commerce build", "Motion system"],
-      timelines: ["2-4 weeks", "1-2 months", "Quarter launch", "Still figuring it out"],
-      submit: "Send it over",
-      success: "WhatsApp draft opened. Send it and we'll reply there."
-    },
-    footerKicker: "Xdigma Creative Studio",
-    footerTitle: "We're easy to reach.",
-    footerHeadings: ["Studio", "Services", "Social"],
-    footerStudio: ["About", "Work", "Services", "Contact"],
-    footerServices: ["Website design", "Motion design", "Front-end development", "SEO systems"],
-    newsletter: "Newsletter",
-    newsletterPlaceholder: "Email address",
-    newsletterJoin: "Join",
-    newsletterSuccess: "Email draft opened. Send it and you're on the list.",
-    footerBottom: ["©2026 Xdigma Creative Studio", "Jakarta / Remote"],
-    caseSelected: "What came out of it",
-    caseLabels: ["The situation", "What we did"],
-    caseMetaLabels: ["Timeline", "Role", "Stack"],
-    caseDeliverables: "Deliverables",
-    caseCta: "Talk to us about something similar",
-    caseClose: "Close",
-    caseAriaClose: "Close case study"
-  },
-  id: {
-    htmlLang: "id",
-    title: "Xdigma — Bantu Brand Lo Lebih Gampang Ditemuin dan Dipercaya",
-    description: "Digital marketing buat UMKM dan bisnis yang lagi berkembang. Kami urus strategi, website, SEO, dan konten — biar lo gak perlu figuring out semuanya sendiri.",
-    skip: "Langsung ke konten",
-    loader: "Lagi nyiapin semuanya",
-    backTop: "Atas",
-    menu: "Menu",
-    close: "Tutup",
-    nav: ["Karya", "Layanan", "Studio", "Kontak"],
-    navCta: "Ngobrol Dulu",
-    whatsappMessage: "Halo Xdigma, gua mau ngembangin brand gua secara online.",
-    whatsappLabel: "WhatsApp 0812 2950 7211",
-    heroKicker: ["Studio digital marketing", "Jakarta / Remote"],
-    eyebrow: "Bisnis lo udah jalan. Sekarang pastiin orang bisa nemuin lo.",
-    rotator: ["Gampang ditemuin", "Keliatan profesional", "Tumbuh pelan tapi pasti"],
-    heroTitle: "Kami bantu brand lo muncul di tempat yang tepat, di waktu yang tepat.",
-    latestProject: "Project terbaru",
-    heroSide: "Dari branding sampai SEO — kami cari tau apa yang brand lo butuhkan dan langsung kerjain. Harga selalu dikasih tau sebelum mulai.",
-    marquee: ["Identitas", "Experience", "Motion", "Growth", "Identitas", "Experience", "Motion", "Growth"],
-    scroll: "Scroll",
-    aboutLabel: "Tentang",
-    introLead: "Kami studio digital marketing kecil yang kerja dekat sama founder dan bisnis yang lagi tumbuh.",
-    introBody: "Gak ada overhead agency besar. Gak ada paket yang bikin bingung. Cuma kerjaan yang emang dibutuhkan brand lo.",
-    recentWork: "Karya terbaru",
-    seeAll: "Lihat semua project",
-    recentWorkLoading: "Lagi memuat project",
-    recentWorkError: "Project belum bisa dimuat",
-    recentWorkRetry: "Coba lagi",
-    attitude: "Cara kami mikir",
-    rules: [
-      ["No. 1", "Kerjain yang berguna dulu.", "Brand yang keliatan bagus tapi gak convert itu cuma dekorasi mahal."],
-      ["No. 2", "Jangan bikin ribet.", "Kebanyakan brand gak butuh lebih banyak — mereka butuh hal yang tepat dikerjain dengan bener."],
-      ["No. 3", "Launch itu baru awal.", "Kami tetap pantau setelah launch buat liat apa yang jalan dan apa yang perlu disesuain."],
-      ["No. 4", "Jujur kalau belum tau.", "Kami lebih milih bilang 'ayo cari tau bareng' daripada pura-pura punya semua jawabannya."],
-      ["No. 5", "Tinggalin sesuatu yang lebih baik.", "Kerjaan yang rapi dan handoff yang terdokumentasi — biar lo gak stuck kalau butuh kami lagi."]
-    ],
-    partnershipTitle: "Dipercaya sama mereka",
-    partnershipBody: "Brand-brand ini yang duluan percaya — sekarang giliran lo nilai sendiri.",
-    servicesTitle: "Yang kami kerjain",
-    servicesBody: "Pilih yang lo butuh. Kami bakal jujur kalau ada yang lebih masuk akal buat situasi lo.",
-    services: ["Desain website", "Front-end development", "Motion dan interaksi", "Shopify dan konversi", "SEO dan konten"],
-    serviceDescriptions: [
-      "Website yang keliatan kayak brand lo dan bikin visitor gampang ambil aksi.",
-      "Rapi, cepat, dan dibangun biar tahan lama — dengan handoff yang proper.",
-      "Detail kecil yang bikin browsing terasa halus dan intentional.",
-      "Dibangun sesuai cara orang belanja beneran — lebih sedikit friksi, lebih banyak pembelian selesai.",
-      "Bantu orang nemuin lo di Google, dan kasih mereka alasan buat tetap di sana."
-    ],
-    serviceIncludesLabel: "Yang termasuk",
-    serviceCta: "Tanya soal ini",
-    serviceClose: "Tutup",
-    serviceAriaClose: "Tutup detail layanan",
-    serviceDetails: [
-      ["Desain website", "Kami desain website yang ceritain brand lo dengan jelas dan bikin langkah selanjutnya obvious buat visitor.", ["Discovery dan positioning", "Information architecture", "Wireframe dan user flow", "Desain visual responsif", "Design system siap komponen"]],
-      ["Front-end development", "Website yang dibangun dengan bener — cepat, accessible, dan gampang di-update tanpa merusak apapun.", ["HTML/CSS/JS responsif", "Pola komponen reusable", "Implementasi interaksi", "Tuning performa", "Audit aksesibilitas"]],
-      ["Motion dan interaksi", "Gerakan halus yang bikin experience terasa thoughtful, bukan sekadar dihias.", ["Loader dan page motion", "Hover dan cursor system", "Storytelling berbasis scroll", "Motion canvas/CSS", "Alternatif reduced-motion"]],
-      ["Shopify dan konversi", "Kami cari tau di mana orang drop off dan benerin itu — biar lebih banyak visitor yang beneran beli.", ["Struktur halaman produk", "UX koleksi", "Modul merchandising", "Pembersihan alur checkout", "Ide eksperimen konversi"]],
-      ["SEO dan konten", "Bantu brand lo muncul waktu orang nyari apa yang lo tawarkan — dan terus muncul.", ["Arsitektur konten", "Template landing page", "Struktur metadata", "Pola internal linking", "Aturan komponen editorial"]]
-    ],
-    selectedCapability: "Kapabilitas pilihan",
-    processTitle: "Biasanya project jalan kayak gini",
-    processBody: "Simpel, dan kami temani di setiap bagiannya.",
-    process: [
-      ["Kami kenalan sama bisnis lo", "Apa yang lo jual, siapa yang lo coba jangkau, dan apa yang belum jalan."],
-      ["Kami plan sebelum build", "Gak langsung loncat ke desain — kami sepakatin arahnya dulu biar gak ada yang kebuang."],
-      ["Kami build, launch, dan follow up", "Setelah launch, kami cek balik buat liat apa yang dikasih tau angkanya."]
-    ],
-    metricsTitle: "Beberapa hal yang udah kami bantu klien capai.",
-    metricLabels: ["rata-rata engagement naik", "kualitas lead naik", "alur checkout lebih cepat", "prototype ke launch"],
-    metricTicker: ["34% bounce rate", "20k sign up", "82% booking naik", "396% traffic naik", "113% sales naik", "37% conversion rate"],
-    awardsTitle: "Beberapa penghargaan di perjalanan.",
-    awards: ["x 8 honorable mentions", "x 9 UI / UX awards", "x 3 featured launches"],
-    clientsSay: "Kata klien",
-    quoteButtons: ["Sebelum", "Lanjut"],
-    quotes: [
-      ["Jujur gak nyangka studio sekecil ini bisa pull it off. Seneng ternyata gue salah.", "Maya R., Founder / Akar Goods"],
-      ["Mereka jelasin setiap keputusan. Itu beda banget buat kami.", "Rafi D., Director / Ruang Nada"],
-      ["Pertama kalinya ketemu tempat yang prosesnya beneran sesuai sama yang dijanjiin di awal.", "Nadia P., CMO / Selaras Lab"],
-      ["Kami bisa maintain semuanya sendiri setelah handoff. Itu hampir gak pernah terjadi.", "Arman K., Product Lead / Kinora"]
-    ],
-    availabilityKicker: "Ketersediaan",
-    availabilityTitle: "Setiap project kami hargain sesuai kebutuhannya.",
-    availabilityLink: ["Ceritain situasi lo dulu"," kami kasih gambaran harga yang jujur sebelum lo commit apapun."],
-    contactKicker: "Belum tau harus mulai dari mana? Gak apa-apa — kebanyakan orang juga gitu.",
-    contactTitle: "Ceritain situasi brand lo. Kami yang lanjutin dari sana.",
-    contactForm: {
-      title: "Kirim brief",
-      subtitle: "Atau ceritain aja apa yang ada di pikiran lo.",
-      fields: ["Nama", "Email", "Tipe project", "Timeline", "Situasinya gimana?"],
-      placeholders: ["Nama lo", "lo@brand.com", "Gak harus udah kepikiran semuanya — ceritain aja situasinya."],
-      emptyOptions: ["Pilih satu", "Pilih satu"],
-      types: ["Redesign website", "Brand site baru", "Build e-commerce", "Sistem motion"],
-      timelines: ["2-4 minggu", "1-2 bulan", "Launch kuartal ini", "Masih dirapihin"],
-      submit: "Kirim",
-      success: "Draft WhatsApp kebuka. Kirim, nanti kami balas di sana."
-    },
-    footerKicker: "Xdigma Creative Studio",
-    footerTitle: "Gampang dihubungi.",
-    footerHeadings: ["Studio", "Layanan", "Sosial"],
-    footerStudio: ["Tentang", "Karya", "Layanan", "Kontak"],
-    footerServices: ["Desain website", "Motion design", "Front-end development", "Sistem SEO"],
-    newsletter: "Newsletter",
-    newsletterPlaceholder: "Alamat email",
-    newsletterJoin: "Gabung",
-    newsletterSuccess: "Draft email kebuka. Kirim, nanti lo masuk list.",
-    footerBottom: ["©2026 Xdigma Creative Studio", "Jakarta / Remote"],
-    caseSelected: "Yang keluar dari project ini",
-    caseLabels: ["Situasinya", "Yang kami lakuin"],
-    caseMetaLabels: ["Timeline", "Peran", "Stack"],
-    caseDeliverables: "Deliverables",
-    caseCta: "Ngobrol soal sesuatu yang mirip",
-    caseClose: "Tutup",
-    caseAriaClose: "Tutup studi kasus"
-  }
-};
+const i18n = window.XDIGMA_CONTENT;
+
+if (!i18n?.en || !i18n?.id) {
+  throw new Error("Xdigma content failed to load.");
+}
 
 function resizeCanvas() {
   const ratio = Math.min(window.devicePixelRatio || 1, hasFinePointer && !prefersSaveData ? 1.5 : 1);
@@ -475,7 +239,6 @@ function animate() {
     cursorRing.style.transform = `translate3d(-50%, -50%, 0) scale(var(--cursor-scale, 1)) rotate(${(cursorTarget.x - cursorPosition.x) * 0.22}deg)`;
   }
 
-  updateRenderedQuoteMotion();
   requestAnimationFrame(animate);
 }
 
@@ -510,6 +273,40 @@ function setIndexedText(selector, values) {
   document.querySelectorAll(selector).forEach((element, index) => {
     if (values[index] !== undefined) element.textContent = values[index];
   });
+}
+
+function renderTextItems(selector, values, tagName = "span") {
+  const container = document.querySelector(selector);
+  if (!container) return;
+
+  while (container.children.length < values.length) {
+    container.append(document.createElement(tagName));
+  }
+
+  while (container.children.length > values.length) {
+    container.lastElementChild.remove();
+  }
+
+  Array.from(container.children).forEach((element, index) => {
+    element.textContent = values[index];
+  });
+}
+
+function renderSelectOptions(select, placeholder, values) {
+  if (!select) return;
+  const selectedIndex = select.selectedIndex;
+  const labels = [placeholder, ...values];
+
+  select.replaceChildren(
+    ...labels.map((label, index) => {
+      const option = document.createElement("option");
+      option.textContent = label;
+      option.value = index === 0 ? "" : label;
+      return option;
+    })
+  );
+
+  select.selectedIndex = Math.min(Math.max(selectedIndex, 0), select.options.length - 1);
 }
 
 function renderList(list, items) {
@@ -561,6 +358,64 @@ function getField(row, names) {
     if (row[name] !== undefined && String(row[name]).trim()) return String(row[name]).trim();
   }
   return "";
+}
+
+function getProjectTimestamp(row) {
+  const value = getField(row, ["timestamp", "date", "created at", "submitted at"]);
+  if (!value) return Number.NaN;
+
+  const numericDate = value.match(
+    /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})(?:[ T](\d{1,2})(?:[:.](\d{1,2}))?(?:[:.](\d{1,2}))?)?$/
+  );
+
+  if (numericDate) {
+    const firstPart = Number(numericDate[1]);
+    const secondPart = Number(numericDate[2]);
+    const year = Number(numericDate[3]);
+    const month = firstPart > 12 ? secondPart : firstPart;
+    const day = firstPart > 12 ? firstPart : secondPart;
+    const hour = Number(numericDate[4] || 0);
+    const minute = Number(numericDate[5] || 0);
+    const second = Number(numericDate[6] || 0);
+    const parsedDate = new Date(year, month - 1, day, hour, minute, second);
+
+    if (
+      parsedDate.getFullYear() === year &&
+      parsedDate.getMonth() === month - 1 &&
+      parsedDate.getDate() === day
+    ) {
+      return parsedDate.getTime();
+    }
+  }
+
+  const parsedTimestamp = Date.parse(value);
+  return Number.isFinite(parsedTimestamp) ? parsedTimestamp : Number.NaN;
+}
+
+function sortProjectRowsByNewest(rows) {
+  const timestampedRows = rows.map((row, index) => ({
+    row,
+    index,
+    timestamp: getProjectTimestamp(row)
+  }));
+
+  if (!timestampedRows.some((item) => Number.isFinite(item.timestamp))) {
+    return rows;
+  }
+
+  return timestampedRows
+    .sort((a, b) => {
+      const aHasDate = Number.isFinite(a.timestamp);
+      const bHasDate = Number.isFinite(b.timestamp);
+
+      if (aHasDate && bHasDate) {
+        return b.timestamp - a.timestamp || a.index - b.index;
+      }
+      if (aHasDate) return -1;
+      if (bHasDate) return 1;
+      return a.index - b.index;
+    })
+    .map((item) => item.row);
 }
 
 function getListField(row, names) {
@@ -723,6 +578,21 @@ function applyProjectCardLanguage(card, lang) {
   if (mockTitle) mockTitle.textContent = locale.mockLabel || locale.title.split(/\s+/)[0] || locale.title;
 }
 
+function updateLatestProjectPill(lang = currentLang) {
+  const pill = document.querySelector(".project-pill");
+  const title = pill?.querySelector("strong");
+  if (!pill || !title) return;
+
+  const t = i18n[lang] || i18n.en;
+  const locale = latestProjectLocales?.[lang] ||
+    latestProjectLocales?.id ||
+    latestProjectLocales?.en;
+  const projectTitle = locale?.title || t.latestProjectFallback;
+
+  title.textContent = projectTitle;
+  pill.setAttribute("aria-label", `${t.latestProject}: ${projectTitle}`);
+}
+
 function createProjectCard(project, index) {
   const visualClass = project.visual;
   const card = document.createElement("article");
@@ -766,6 +636,8 @@ function renderRecentWork(projects) {
   const grid = document.querySelector(".project-grid");
   if (!grid || !projects.length) return;
 
+  latestProjectLocales = projects[0].locales;
+  updateLatestProjectPill();
   grid.classList.remove("is-status");
   grid.setAttribute("aria-busy", "false");
   grid.replaceChildren(...projects.map(createProjectCard));
@@ -780,18 +652,15 @@ function renderRecentWorkStatus(state) {
 
   const t = i18n[currentLang] || i18n.en;
   const status = document.createElement("div");
-  const marker = document.createElement("span");
   const label = document.createElement("strong");
 
   grid.classList.add("is-status");
   grid.setAttribute("aria-busy", String(state === "loading"));
   status.className = `work-status is-${state}`;
   status.setAttribute("role", state === "error" ? "alert" : "status");
-  marker.className = "work-loader-mark";
-  marker.setAttribute("aria-hidden", "true");
   label.className = "work-status-label";
   label.textContent = state === "error" ? t.recentWorkError : t.recentWorkLoading;
-  status.append(marker, label);
+  status.append(label);
 
   if (state === "error") {
     const retry = document.createElement("button");
@@ -820,8 +689,10 @@ async function loadRecentWorkFromGoogleSheet() {
     const response = await fetch(recentWorkSource.url, { cache: "no-store" });
     if (!response.ok) throw new Error(`Recent work source returned ${response.status}`);
     const rows = rowsFromRemoteText(await response.text(), response.headers.get("content-type") || "");
-    const projects = rows
-      .filter((row) => !/^no|false|0$/i.test(getField(row, ["published", "publish", "show"])))
+    const publishedRows = rows.filter(
+      (row) => !/^no|false|0$/i.test(getField(row, ["published", "publish", "show"]))
+    );
+    const projects = sortProjectRowsByNewest(publishedRows)
       .map((row, index) => {
         const idResult = parseLinkedText(getField(row, ["result", "hasil", "metric"]) || "Selected work");
         const enResultValue = getField(row, ["result en", "result english", "english result"]);
@@ -910,7 +781,7 @@ function openMailDraft(subject, lines) {
 }
 
 function openWhatsappDraft(lines) {
-  const text = lines.filter(Boolean).join("\n");
+  const text = lines.map((line) => String(line ?? "")).join("\n").trim();
   window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`, "_blank", "noopener");
 }
 
@@ -972,7 +843,7 @@ function applyLanguage(lang) {
   document.querySelector(".back-top")?.setAttribute("data-cursor", t.backTop);
   document.querySelector(".menu-toggle")?.setAttribute("data-cursor", t.menu);
   if (!document.querySelector(".mobile-menu")?.classList.contains("is-open")) {
-    setText(".menu-toggle span", t.menu);
+    setText(".menu-toggle", t.menu);
   }
   setIndexedText(".main-nav a", t.nav);
   setIndexedText(".mobile-menu a", t.nav);
@@ -981,9 +852,9 @@ function applyLanguage(lang) {
   document.querySelectorAll("[data-whatsapp-cta]").forEach((link) => {
     link.setAttribute("href", getWhatsappHref(t.whatsappMessage));
   });
-  setIndexedText(".hero-kicker span", t.heroKicker);
+  renderTextItems(".hero-kicker", t.heroKicker);
   setText(".eyebrow", t.eyebrow);
-  setIndexedText(".hero-rotator span", t.rotator);
+  renderTextItems(".hero-rotator", t.rotator);
 
   const headline = document.querySelector("#hero-title");
   if (headline) {
@@ -994,8 +865,9 @@ function applyLanguage(lang) {
   }
 
   setText(".project-pill span", t.latestProject);
+  updateLatestProjectPill(lang);
   setText(".hero-side p", t.heroSide);
-  setIndexedText(".marquee-track span", t.marquee);
+  renderTextItems(".marquee-track", t.marquee);
   setText(".scroll-cue strong", t.scroll);
   setText(".intro .section-label span:nth-child(2)", t.aboutLabel);
   setText(".intro-text p:first-child", t.introLead);
@@ -1008,18 +880,23 @@ function applyLanguage(lang) {
     setText(".work-retry", t.recentWorkRetry);
   }
   setText(".rules .section-label span:nth-child(2)", t.attitude);
-  setIndexedText(".attitude-ghost span", [t.attitude, t.attitude, t.attitude]);
+  renderTextItems(".attitude-ghost", [t.attitude, t.attitude, t.attitude]);
 
   document.querySelectorAll(".rule-item").forEach((item, index) => {
     const rule = t.rules[index];
     if (!rule) return;
-    item.querySelector("span").textContent = rule[0];
+    item.dataset.ruleNumber = rule[0];
     item.querySelector("h3").textContent = rule[1];
     item.querySelector("p").textContent = rule[2];
   });
 
   setText(".partner-strip .section-heading h2", t.partnershipTitle);
   setText(".partner-strip .section-heading p", t.partnershipBody);
+  renderTextItems(".logo-track", [...t.industries, ...t.industries]);
+  document.querySelector(".logo-marquee")?.setAttribute(
+    "aria-label",
+    `${t.partnershipTitle}: ${t.industries.join(", ")}`
+  );
   setText(".services .section-heading h2", t.servicesTitle);
   setText(".services .section-heading p", t.servicesBody);
   setIndexedText(".service-list button > span:first-child", t.services);
@@ -1045,20 +922,17 @@ function applyLanguage(lang) {
   });
 
   setText(".metric-copy h2", t.metricsTitle);
-  setIndexedText(".metric-grid div span", t.metricLabels);
+  renderTextItems(".metric-grid", t.metricLabels, "div");
   const tickerItems = [...t.metricTicker, ...t.metricTicker];
-  setIndexedText(".metrics-track span", tickerItems);
+  renderTextItems(".metrics-track", tickerItems);
   setText(".awards-copy h2", t.awardsTitle);
   setIndexedText(".awards-grid span", t.awards);
-  setText(".testimonials .section-heading h2", t.clientsSay);
-  setText("[data-quote-prev]", t.quoteButtons[0]);
-  setText("[data-quote-next]", t.quoteButtons[1]);
-
-  document.querySelectorAll(".quote-rail blockquote").forEach((quote, index) => {
-    const item = t.quotes[index];
+  setText(".faq .section-heading h2", t.faqTitle);
+  document.querySelectorAll(".faq-list details").forEach((detail, index) => {
+    const item = t.faqItems[index];
     if (!item) return;
-    quote.querySelector("p").textContent = `“${item[0]}”`;
-    quote.querySelector("cite").textContent = item[1];
+    detail.querySelector("summary").textContent = item[0];
+    detail.querySelector("p").textContent = item[1];
   });
 
   setText(".availability-copy span", t.availabilityKicker);
@@ -1078,18 +952,10 @@ function applyLanguage(lang) {
   document.querySelector(".brief-form button")?.setAttribute("data-cursor", lang === "id" ? "Kirim" : "Send");
   const projectType = document.querySelector(".brief-form select[name='type']");
   const timeline = document.querySelector(".brief-form select[name='timeline']");
-  if (projectType) {
-    projectType.options[0].textContent = t.contactForm.emptyOptions[0];
-    t.contactForm.types.forEach((item, index) => {
-      if (projectType.options[index + 1]) projectType.options[index + 1].textContent = item;
-    });
-  }
-  if (timeline) {
-    timeline.options[0].textContent = t.contactForm.emptyOptions[1];
-    t.contactForm.timelines.forEach((item, index) => {
-      if (timeline.options[index + 1]) timeline.options[index + 1].textContent = item;
-    });
-  }
+  const budget = document.querySelector(".brief-form select[name='budget']");
+  renderSelectOptions(projectType, t.contactForm.emptyOptions[0], t.contactForm.types);
+  renderSelectOptions(timeline, t.contactForm.emptyOptions[1], t.contactForm.timelines);
+  renderSelectOptions(budget, t.contactForm.emptyOptions[2], t.contactForm.budgets);
   document.querySelectorAll(".contact-button, .footer-hero a").forEach((item) => {
     item.textContent = t.whatsappLabel;
     item.setAttribute("data-cursor", lang === "id" ? "Bicara" : "Talk");
@@ -1127,10 +993,6 @@ function applyLanguage(lang) {
     renderCaseModal(lastCaseTrigger);
   }
 
-  window.requestAnimationFrame(() => {
-    updateQuoteMotion();
-    quoteNeedsRender = true;
-  });
 }
 
 function setupLanguageToggle() {
@@ -1207,149 +1069,6 @@ function updateScrollMotion() {
     contact.style.setProperty("--contact-y", `${42 + localY * 18}%`);
   }
 
-  updateQuoteMotion();
-}
-
-function updateQuoteMotion() {
-  if (!testimonialsSection || !quoteRail) return;
-
-  const quotes = quoteItems;
-  if (prefersReducedMotion || !quotes.length) {
-    quoteRail.style.setProperty("--quote-x", "0px");
-    testimonialsSection.style.setProperty("--quote-distance", "0px");
-    return;
-  }
-
-  const maxShift = getQuoteShift(quotes);
-  const scrollable = Math.max(1, testimonialsSection.offsetHeight - window.innerHeight);
-  const progressValue = Math.max(0, Math.min(1, (window.scrollY - testimonialsSection.offsetTop) / scrollable));
-  quoteTargetProgress = progressValue;
-  quoteNeedsRender = true;
-  testimonialsSection.style.setProperty("--quote-distance", `${maxShift}px`);
-}
-
-function updateRenderedQuoteMotion() {
-  if (!testimonialsSection || !quoteRail || prefersReducedMotion) return;
-  if (!quoteNeedsRender && Math.abs(quoteTargetProgress - quoteProgress) < 0.001) return;
-  const quotes = quoteItems;
-  if (!quotes.length) return;
-
-  const maxShift = getQuoteShift(quotes);
-  const ease = Math.abs(quoteTargetProgress - quoteProgress) > 0.18 ? 0.14 : 0.085;
-  quoteProgress += (quoteTargetProgress - quoteProgress) * ease;
-  if (Math.abs(quoteTargetProgress - quoteProgress) < 0.001) quoteProgress = quoteTargetProgress;
-  applyQuoteProgress(quoteProgress, quotes, maxShift);
-  quoteNeedsRender = quoteProgress !== quoteTargetProgress;
-}
-
-function getQuoteShift(quotes = quoteItems) {
-  if (!quoteRail || !quotes.length) return 0;
-  const lastQuote = quotes[quotes.length - 1];
-  return Math.max(0, lastQuote.offsetLeft + lastQuote.offsetWidth - quoteRail.clientWidth);
-}
-
-function applyQuoteProgress(progressValue, quotes = quoteItems, maxShift = getQuoteShift(quotes)) {
-  if (!testimonialsSection || !quoteRail || !quotes.length) return;
-  const clampedProgress = Math.max(0, Math.min(1, progressValue));
-  const activeIndex = Math.min(quotes.length - 1, Math.round(clampedProgress * (quotes.length - 1)));
-  const shift = getQuoteShiftForProgress(clampedProgress, quotes, maxShift);
-
-  testimonialsSection.style.setProperty("--quote-distance", `${maxShift}px`);
-  quoteRail.style.setProperty("--quote-x", `${shift * -1}px`);
-  quotes.forEach((quote, index) => quote.classList.toggle("is-current", index === activeIndex));
-}
-
-function getQuoteShiftForProgress(progressValue, quotes, maxShift) {
-  if (quotes.length < 2) return 0;
-  const scaledProgress = progressValue * (quotes.length - 1);
-  const baseIndex = Math.min(quotes.length - 2, Math.floor(scaledProgress));
-  const segmentProgress = scaledProgress - baseIndex;
-  const currentShift = Math.min(maxShift, quotes[baseIndex].offsetLeft);
-  const nextShift = Math.min(maxShift, quotes[baseIndex + 1].offsetLeft);
-  return currentShift + (nextShift - currentShift) * segmentProgress;
-}
-
-function setupCounters() {
-  const counters = document.querySelectorAll("[data-count]");
-  if (!("IntersectionObserver" in window)) return;
-
-  const counterObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        const element = entry.target;
-        const target = Number(element.dataset.count);
-        const suffix = element.dataset.suffix || "";
-        const decimals = Number.isInteger(target) ? 0 : 1;
-        const duration = prefersReducedMotion ? 1 : 1200;
-        const start = performance.now();
-        const finalValue = `${target.toFixed(decimals)}${suffix}`;
-        element.textContent = `${(0).toFixed(decimals)}${suffix}`;
-
-        function tick(now) {
-          const progressValue = Math.min(1, (now - start) / duration);
-          const eased = 1 - Math.pow(1 - progressValue, 3);
-          element.textContent = progressValue === 1 ? finalValue : `${(target * eased).toFixed(decimals)}${suffix}`;
-          if (progressValue < 1) requestAnimationFrame(tick);
-        }
-
-        requestAnimationFrame(tick);
-        counterObserver.unobserve(element);
-      });
-    },
-    { threshold: 0.5 }
-  );
-
-  counters.forEach((counter) => counterObserver.observe(counter));
-}
-
-function setupQuoteRail() {
-  const rail = quoteRail || document.querySelector(".quote-rail");
-  const quotes = Array.from(document.querySelectorAll(".quote-rail blockquote"));
-  const prev = document.querySelector("[data-quote-prev]");
-  const next = document.querySelector("[data-quote-next]");
-  if (!rail || !quotes.length) return;
-
-  function setCurrent(index) {
-    quotes.forEach((quote, quoteIndex) => {
-      quote.classList.toggle("is-current", quoteIndex === index);
-    });
-  }
-
-  function getCurrentIndex() {
-    const railLeft = rail.getBoundingClientRect().left;
-    return quotes.reduce((closestIndex, quote, index) => {
-      const closestDistance = Math.abs(quotes[closestIndex].getBoundingClientRect().left - railLeft);
-      const distance = Math.abs(quote.getBoundingClientRect().left - railLeft);
-      return distance < closestDistance ? index : closestIndex;
-    }, 0);
-  }
-
-  function scrollToQuote(index) {
-    const nextIndex = (index + quotes.length) % quotes.length;
-    if (testimonialsSection && !prefersReducedMotion) {
-      const scrollable = Math.max(1, testimonialsSection.offsetHeight - window.innerHeight);
-      const progressValue = quotes.length > 1 ? nextIndex / (quotes.length - 1) : 0;
-      quoteTargetProgress = progressValue;
-      quoteNeedsRender = true;
-      window.scrollTo({
-        top: testimonialsSection.offsetTop + scrollable * progressValue,
-        behavior: "smooth"
-      });
-      setCurrent(nextIndex);
-      return;
-    }
-
-    quotes[nextIndex].scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", inline: "start", block: "nearest" });
-    setCurrent(nextIndex);
-  }
-
-  prev?.addEventListener("click", () => scrollToQuote(getCurrentIndex() - 1));
-  next?.addEventListener("click", () => scrollToQuote(getCurrentIndex() + 1));
-  rail.addEventListener("scroll", () => {
-    window.clearTimeout(rail._quoteTimer);
-    rail._quoteTimer = window.setTimeout(() => setCurrent(getCurrentIndex()), 80);
-  }, { passive: true });
 }
 
 function setupNewsletter() {
@@ -1395,18 +1114,21 @@ function setupBriefForm() {
     const email = data.get("email") || "";
     const projectType = data.get("type") || "";
     const timeline = data.get("timeline") || "";
+    const budget = data.get("budget") || "";
     const message = data.get("message") || "";
+    const whatsapp = t.contactForm.whatsapp;
     openWhatsappDraft([
-      "Hi Xdigma,",
+      whatsapp.greeting,
       "",
-      "I want to start a project brief.",
+      whatsapp.intro,
       "",
-      `Name: ${name}`,
-      `Email: ${email}`,
-      `Project type: ${projectType}`,
-      `Timeline: ${timeline}`,
+      `*${whatsapp.labels[0]}:* ${name}`,
+      `*${whatsapp.labels[1]}:* ${email}`,
+      `*${whatsapp.labels[2]}:* ${projectType}`,
+      `*${whatsapp.labels[3]}:* ${timeline}`,
+      `*${whatsapp.labels[4]}:* ${budget}`,
       "",
-      "Project context:",
+      `*${whatsapp.labels[5]}:*`,
       String(message)
     ]);
     form.classList.add("is-sent");
@@ -1696,8 +1418,6 @@ setupLanguageToggle();
 setupLoader();
 setupHeroRotator();
 setupCursorStates();
-setupCounters();
-setupQuoteRail();
 setupNewsletter();
 setupBriefForm();
 setupServicePreview();

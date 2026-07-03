@@ -4,7 +4,7 @@ Static landing page for Xdigma Creative Studio, built with plain HTML, CSS, and 
 
 ## Overview
 
-This site presents a creative web studio with sections for recent work, services, process, metrics, testimonials, availability, contact, and footer links. It includes interactive canvas motion, language switching, modal case studies, service details, a brief form, and newsletter/contact draft actions.
+This site presents a creative web studio with sections for recent work, services, process, focus areas, certifications, FAQ, availability, contact, and footer links. It includes interactive canvas motion, language switching, modal case studies, service details, a brief form, and newsletter/contact draft actions.
 
 ## Project Structure
 
@@ -17,6 +17,7 @@ This site presents a creative web studio with sections for recent work, services
 │   ├── og-preview.png
 │   └── og-preview.svg
 ├── index.html
+├── content.js
 ├── robots.txt
 ├── script.js
 ├── site.webmanifest
@@ -26,10 +27,15 @@ This site presents a creative web studio with sections for recent work, services
 ## Files
 
 - `index.html` contains the page markup, SEO metadata, structured data, modal shells, and asset links.
+- `content.js` is the single source of truth for all Indonesian and English page copy, form options, FAQ entries, and service details.
 - `styles.css` contains all desktop, tablet, mobile, animation, and reduced-motion styles.
-- `script.js` controls canvas animation, language switching, menus, modals, counters, testimonials, and form actions.
+- `script.js` contains application logic only: rendering, animation, language switching, menus, modals, and form actions.
 - `site.webmanifest` defines installable app metadata such as name, icons, display mode, and theme colors.
 - `robots.txt` allows search engines to index the site.
+
+## Editing Content
+
+Edit visible page copy in `content.js`. Keep `index.html` focused on structure and SEO metadata.
 
 ## Running Locally
 
