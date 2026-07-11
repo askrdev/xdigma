@@ -1,64 +1,6 @@
-function setupCursorStates() {
-  if (!cursor || !cursorDot || !cursorRing || !cursorLabel || prefersReducedMotion || !hasFinePointer) return;
-
-  document.addEventListener("pointerenter", () => cursor.classList.add("is-visible"));
-  document.addEventListener("pointerleave", () => cursor.classList.remove("is-visible"));
-  document.addEventListener("pointerdown", () => cursor.classList.add("is-pressed"));
-  document.addEventListener("pointerup", () => cursor.classList.remove("is-pressed"));
-
-  const interactiveElements = document.querySelectorAll("a, button, [data-cursor]");
-  interactiveElements.forEach((element) => {
-    if (element.dataset.cursorBound === "true") return;
-    element.dataset.cursorBound = "true";
-
-    element.addEventListener("pointerenter", () => {
-      const label = element.dataset.cursor || "";
-      cursor.classList.add("is-active");
-      cursor.classList.toggle("has-label", Boolean(label));
-      cursorLabel.textContent = label;
-    });
-    element.addEventListener("pointerleave", () => {
-      cursor.classList.remove("is-active", "has-label", "is-pressed");
-      cursorLabel.textContent = "";
-    });
-  });
-}
-
 /* ==========================================================================
-   Tablet JS
-   Reserved for tablet-specific behavior.
+   DOM references and runtime state
    ========================================================================== */
-
-/* ==========================================================================
-   Mobile JS
-   Mobile navigation behavior.
-   ========================================================================== */
-
-function setupMobileMenu() {
-  const toggle = document.querySelector(".menu-toggle");
-  const menu = document.querySelector(".mobile-menu");
-  if (!toggle || !menu) return;
-
-  function setOpen(isOpen) {
-    const t = i18n[currentLang] || i18n.en;
-    menu.classList.toggle("is-open", isOpen);
-    menu.setAttribute("aria-hidden", String(!isOpen));
-    toggle.setAttribute("aria-expanded", String(isOpen));
-    toggle.textContent = isOpen ? t.close : t.menu;
-  }
-
-  toggle.addEventListener("click", () => {
-    setOpen(!menu.classList.contains("is-open"));
-  });
-
-  menu.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => setOpen(false));
-  });
-
-  window.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") setOpen(false);
-  });
-}
 
 const canvas = document.querySelector("#hero-canvas");
 const ctx = canvas.getContext("2d");
@@ -84,9 +26,8 @@ const backTop = document.querySelector(".back-top");
 const loaderCount = document.querySelector("[data-loader-count]");
 const attitudeGhost = document.querySelector(".attitude-ghost");
 const langToggle = document.querySelector(".lang-toggle");
-const contactEmail = "hello@xdigma.studio";
+const contactEmail = "xdigma01@gmail.com";
 const whatsappNumber = "628131770613";
-// Paste a published Google Sheet CSV URL or Apps Script Web App URL here.
 const recentWorkSource = {
   url: "https://script.google.com/macros/s/AKfycbxHdcy8Xyyo5chbEKqjiTthGsdxjH7VQd8gKq8DfBS6fhPZR_pkI1AOA_IQYiRL1Lh3FA/exec",
   limit: 3
@@ -119,13 +60,121 @@ const storage = {
   }
 };
 const savedLang = storage.get("xdigma-lang");
-let currentLang = savedLang || "en";
+let currentLang = savedLang || "id";
 
 const i18n = window.XDIGMA_CONTENT;
 
 if (!i18n?.en || !i18n?.id) {
   throw new Error("Xdigma content failed to load.");
 }
+
+const fallbackRecentWorkProjects = [
+  {
+    resultUrl: "http://raalmuin.sch.id",
+    visual: "visual-three",
+    image: "",
+    imagePosition: "center",
+    imageFit: "cover",
+    locales: {
+      id: {
+        title: "RA AL'MUIN",
+        type: "Website sekolah / Brand platform",
+        copy: "Website yang memperjelas identitas, layanan, dan kontak RA AL'MUIN secara online.",
+        result: "raalmuin.sch.id",
+        challenge: "Sekolah butuh website yang rapi untuk menjelaskan value, program, dan informasi penting ke calon orang tua.",
+        solution: "Membangun website responsif dengan struktur pesan yang jelas, tampilan modern, dan CTA kontak yang mudah ditemukan.",
+        deliverables: ["Website design", "Front-end development", "Content structure", "Responsive UI", "Basic SEO setup"],
+        timeline: "4 Minggu",
+        role: "UX/UI design, front-end development",
+        stack: "HTML, CSS, JavaScript",
+        mockLabel: "R.A AL-Mu'in"
+      },
+      en: {
+        title: "RA AL'MUIN",
+        type: "School website / Brand platform",
+        copy: "A website that clarifies RA AL'MUIN's identity, services, and contact path online.",
+        result: "raalmuin.sch.id",
+        challenge: "The school needed a cleaner website to explain its value, programs, and key information to parents.",
+        solution: "Built a responsive website with clear messaging, modern visuals, and easy-to-find contact CTAs.",
+        deliverables: ["Website design", "Front-end development", "Content structure", "Responsive UI", "Basic SEO setup"],
+        timeline: "4 Weeks",
+        role: "UX/UI design, front-end development",
+        stack: "HTML, CSS, JavaScript",
+        mockLabel: "R.A AL-Mu'in"
+      }
+    }
+  },
+  {
+    resultUrl: "https://dbagongmagelang.github.io/",
+    visual: "visual-two",
+    image: "",
+    imagePosition: "center",
+    imageFit: "cover",
+    locales: {
+      id: {
+        title: "D Bagong Magelang",
+        type: "Website restoran / Social media",
+        copy: "Website dan sistem sosial media yang memperkenalkan menu, suasana, lokasi, dan cara reservasi D Bagong.",
+        result: "Website live dan menu lebih gampang dibagikan",
+        challenge: "Restoran belum punya tempat online yang cukup rapi untuk menampilkan menu, suasana, lokasi, dan kontak.",
+        solution: "Membangun website responsif dengan menu yang jelas, foto suasana, informasi lokasi, dan arahan reservasi yang mudah diakses.",
+        deliverables: ["Website design", "Front-end development", "Menu page", "Responsive UI", "Content direction"],
+        timeline: "4 Minggu",
+        role: "UX/UI design, front-end development, social media strategy",
+        stack: "HTML, CSS, JavaScript, Canva",
+        mockLabel: "D Bagong"
+      },
+      en: {
+        title: "D Bagong Magelang",
+        type: "Restaurant website / Social media",
+        copy: "A website and social system that introduces D Bagong's menu, atmosphere, location, and reservation path.",
+        result: "Live website and menu made easier to share",
+        challenge: "The restaurant needed a clearer online place to present its menu, atmosphere, location, and contact path.",
+        solution: "Built a responsive website with a clear menu page, restaurant photos, location info, and easy reservation direction.",
+        deliverables: ["Website design", "Front-end development", "Menu page", "Responsive UI", "Content direction"],
+        timeline: "4 Weeks",
+        role: "UX/UI design, front-end development, social media strategy",
+        stack: "HTML, CSS, JavaScript, Canva",
+        mockLabel: "D Bagong"
+      }
+    }
+  },
+  {
+    resultUrl: "",
+    visual: "visual-one",
+    image: "",
+    imagePosition: "center",
+    imageFit: "cover",
+    locales: {
+      id: {
+        title: "Bakmi Saming",
+        type: "Content design / Social media",
+        copy: "Sistem konten sosial untuk membuat produk, menu, dan promo Bakmi Saming terlihat lebih konsisten.",
+        result: "Konten lebih rapi dan siap dipakai rutin",
+        challenge: "Konten sosial belum punya arah visual dan struktur pesan yang konsisten untuk menu dan promo.",
+        solution: "Membuat arah visual, template konten, dan pilar komunikasi agar post lebih mudah diproduksi dan dikenali.",
+        deliverables: ["Visual direction", "Social content templates", "Content pillars", "Reusable Canva assets"],
+        timeline: "2 Minggu",
+        role: "Content design, social media branding",
+        stack: "Canva, Meta Business Suite",
+        mockLabel: "Bakmi Saming"
+      },
+      en: {
+        title: "Bakmi Saming",
+        type: "Content design / Social media",
+        copy: "A social content system that makes Bakmi Saming's products, menu, and promotions look more consistent.",
+        result: "Cleaner content system ready for repeated use",
+        challenge: "Social content did not yet have consistent visual direction or message structure for menu and promo posts.",
+        solution: "Created visual direction, content templates, and communication pillars so posts are easier to produce and recognize.",
+        deliverables: ["Visual direction", "Social content templates", "Content pillars", "Reusable Canva assets"],
+        timeline: "2 Weeks",
+        role: "Content design, social media branding",
+        stack: "Canva, Meta Business Suite",
+        mockLabel: "Bakmi Saming"
+      }
+    }
+  }
+];
 
 function resizeCanvas() {
   const ratio = Math.min(window.devicePixelRatio || 1, hasFinePointer && !prefersSaveData ? 1.5 : 1);
@@ -135,7 +184,14 @@ function resizeCanvas() {
   canvas.height = Math.floor(height * ratio);
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
-  const count = Math.min(hasFinePointer && !prefersSaveData ? 56 : 20, Math.max(hasFinePointer ? 26 : 12, Math.floor(width / (hasFinePointer ? 28 : 52))));
+  const maxParticleCount = hasFinePointer && !prefersSaveData ? 56 : 20;
+  const minParticleCount = hasFinePointer ? 26 : 12;
+  const particleDensity = hasFinePointer ? 28 : 52;
+  const count = Math.min(
+    maxParticleCount,
+    Math.max(minParticleCount, Math.floor(width / particleDensity))
+  );
+
   particles = Array.from({ length: count }, (_, index) => ({
     x: Math.random() * width,
     y: Math.random() * height,
@@ -234,9 +290,15 @@ function animate() {
   if (cursor && !shouldReduceRuntimeMotion && hasFinePointer) {
     cursorPosition.x += (cursorTarget.x - cursorPosition.x) * 0.16;
     cursorPosition.y += (cursorTarget.y - cursorPosition.y) * 0.16;
+
+    const cursorOffsetX = cursorTarget.x - cursorPosition.x;
+    const cursorOffsetY = cursorTarget.y - cursorPosition.y;
+
     cursor.style.transform = `translate3d(${cursorPosition.x}px, ${cursorPosition.y}px, 0)`;
-    cursorDot.style.transform = `translate3d(${cursorTarget.x - cursorPosition.x}px, ${cursorTarget.y - cursorPosition.y}px, 0) translate3d(-50%, -50%, 0)`;
-    cursorRing.style.transform = `translate3d(-50%, -50%, 0) scale(var(--cursor-scale, 1)) rotate(${(cursorTarget.x - cursorPosition.x) * 0.22}deg)`;
+    cursorDot.style.transform =
+      `translate3d(${cursorOffsetX}px, ${cursorOffsetY}px, 0) translate3d(-50%, -50%, 0)`;
+    cursorRing.style.transform =
+      `translate3d(-50%, -50%, 0) scale(var(--cursor-scale, 1)) rotate(${cursorOffsetX * 0.22}deg)`;
   }
 
   requestAnimationFrame(animate);
@@ -570,11 +632,25 @@ function applyProjectCardLanguage(card, lang) {
   card.dataset.cursor = lang === "id" ? "Lihat" : "View";
   card.setAttribute("aria-label", `${lang === "id" ? "Buka studi kasus" : "Open"} ${locale.title}`);
 
+  const t = i18n[lang] || i18n.en;
+  const resultUrl = getSafeHttpUrl(card.dataset.caseResultUrl);
   const title = card.querySelector(".project-meta h3");
   const type = card.querySelector(".project-meta span");
+  const summary = card.querySelector(".project-summary");
+  const resultLabel = card.querySelector(".project-result span");
+  const resultValue = card.querySelector(".project-result strong");
+  const liveLink = card.querySelector(".project-live-link");
   const mockTitle = card.querySelector(".mock-window strong");
   if (title) title.textContent = locale.title;
   if (type) type.textContent = locale.type;
+  if (summary) summary.textContent = locale.challenge || locale.copy;
+  if (resultLabel) resultLabel.textContent = t.projectResultLabel;
+  if (resultValue) resultValue.textContent = locale.result;
+  if (liveLink) {
+    liveLink.textContent = t.projectLiveLabel;
+    liveLink.hidden = !resultUrl;
+    if (resultUrl) liveLink.href = resultUrl;
+  }
   if (mockTitle) mockTitle.textContent = locale.mockLabel || locale.title.split(/\s+/)[0] || locale.title;
 }
 
@@ -626,7 +702,17 @@ function createProjectCard(project, index) {
   meta.className = "project-meta";
   const type = document.createElement("span");
   const title = document.createElement("h3");
-  meta.append(type, title);
+  const summary = document.createElement("p");
+  summary.className = "project-summary";
+  const result = document.createElement("div");
+  result.className = "project-result";
+  result.append(document.createElement("span"), document.createElement("strong"));
+  const live = document.createElement("a");
+  live.className = "project-live-link";
+  live.target = "_blank";
+  live.rel = "noopener noreferrer";
+  live.dataset.cursor = currentLang === "id" ? "Live" : "Live";
+  meta.append(type, title, summary, result, live);
   card.append(visual, meta);
   applyProjectCardLanguage(card, currentLang);
   return card;
@@ -679,7 +765,7 @@ function renderRecentWorkStatus(state) {
 async function loadRecentWorkFromGoogleSheet() {
   if (recentWorkLoading) return;
   if (!recentWorkSource.url) {
-    renderRecentWorkStatus("error");
+    renderRecentWork(fallbackRecentWorkProjects.slice(0, recentWorkSource.limit));
     return;
   }
 
@@ -707,7 +793,15 @@ async function loadRecentWorkFromGoogleSheet() {
         const idLocale = {
           title: getField(row, ["title", "project title", "nama project", "name"]) || `Project ${index + 1}`,
           type: getField(row, ["type", "project type", "kategori", "category"]) || "Project",
-          copy: getField(row, ["copy", "the situation", "short summary", "summary", "description", "deskripsi"]) || "Detail project sedang disiapkan.",
+          copy:
+            getField(row, [
+              "copy",
+              "the situation",
+              "short summary",
+              "summary",
+              "description",
+              "deskripsi"
+            ]) || "Detail project sedang disiapkan.",
           result: idResult.text,
           challenge: getField(row, ["challenge", "tantangan"]) || "Detail sedang disiapkan.",
           solution: getField(row, ["solution", "solusi"]) || "Detail sedang disiapkan.",
@@ -769,7 +863,7 @@ async function loadRecentWorkFromGoogleSheet() {
     renderRecentWork(projects);
   } catch (error) {
     console.warn("Recent work could not be loaded:", error);
-    renderRecentWorkStatus("error");
+    renderRecentWork(fallbackRecentWorkProjects.slice(0, recentWorkSource.limit));
   } finally {
     recentWorkLoading = false;
   }
@@ -790,11 +884,18 @@ function getWhatsappHref(message) {
 }
 
 function getFocusableElements(container) {
-  return Array.from(
-    container.querySelectorAll(
-      "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"
-    )
-  ).filter((element) => !element.hasAttribute("disabled") && element.getAttribute("aria-hidden") !== "true");
+  const focusableSelector = [
+    "a[href]",
+    "button:not([disabled])",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    "textarea:not([disabled])",
+    "[tabindex]:not([tabindex='-1'])"
+  ].join(", ");
+
+  return Array.from(container.querySelectorAll(focusableSelector)).filter(
+    (element) => !element.hasAttribute("disabled") && element.getAttribute("aria-hidden") !== "true"
+  );
 }
 
 function trapModalFocus(event, modal, closeModal) {
@@ -835,12 +936,15 @@ function applyLanguage(lang) {
   document.title = t.title;
   document.querySelector('meta[name="description"]')?.setAttribute("content", t.description);
   langToggle?.setAttribute("data-lang", lang);
+  langToggle?.setAttribute("aria-label", t.languageToggleLabel);
+  document.querySelector(".main-nav")?.setAttribute("aria-label", t.navLabel);
 
   setText(".skip-link", t.skip);
   setText(".loader-inner span", t.loader);
   setText(".back-top", t.backTop);
   document.querySelector(".back-top")?.setAttribute("aria-label", t.backTop);
   document.querySelector(".back-top")?.setAttribute("data-cursor", t.backTop);
+  document.querySelector(".menu-toggle")?.setAttribute("aria-label", t.mobileMenuLabel);
   document.querySelector(".menu-toggle")?.setAttribute("data-cursor", t.menu);
   if (!document.querySelector(".mobile-menu")?.classList.contains("is-open")) {
     setText(".menu-toggle", t.menu);
@@ -855,6 +959,12 @@ function applyLanguage(lang) {
   renderTextItems(".hero-kicker", t.heroKicker);
   setText(".eyebrow", t.eyebrow);
   renderTextItems(".hero-rotator", t.rotator);
+  setText(".hero-primary", t.heroPrimaryCta);
+  setText(".hero-secondary", t.heroSecondaryCta);
+  document.querySelector(".hero-primary")?.setAttribute("data-cursor", lang === "id" ? "Konsultasi" : "Consult");
+  document.querySelector(".hero-secondary")?.setAttribute("data-cursor", lang === "id" ? "Paket" : "Packages");
+  renderTextItems(".hero-proof", t.heroProof);
+  document.querySelector(".hero-proof")?.setAttribute("aria-label", t.heroProofLabel);
 
   const headline = document.querySelector("#hero-title");
   if (headline) {
@@ -899,7 +1009,6 @@ function applyLanguage(lang) {
   );
   setText(".services .section-heading h2", t.servicesTitle);
   setText(".services .section-heading p", t.servicesBody);
-  setIndexedText(".service-list button > span:first-child", t.services);
   setText(".service-preview span", t.selectedCapability);
   setText(".service-modal-list span", t.serviceIncludesLabel);
   setText(".service-modal-cta", t.serviceCta);
@@ -907,6 +1016,10 @@ function applyLanguage(lang) {
   document.querySelector(".service-close")?.setAttribute("aria-label", t.serviceAriaClose);
   document.querySelector(".service-close")?.setAttribute("data-cursor", t.serviceClose);
   document.querySelectorAll(".service-list button").forEach((service, index) => {
+    const title = service.querySelector("span b") || service.querySelector("span:first-child");
+    const meta = service.querySelector(".service-meta");
+    if (title) title.textContent = t.services[index] || "";
+    if (meta) meta.textContent = t.serviceMeta?.[index] || "";
     service.dataset.service = t.serviceDescriptions[index] || "";
   });
   const previewText = document.querySelector(".service-preview p");
@@ -926,7 +1039,12 @@ function applyLanguage(lang) {
   const tickerItems = [...t.metricTicker, ...t.metricTicker];
   renderTextItems(".metrics-track", tickerItems);
   setText(".awards-copy h2", t.awardsTitle);
-  setIndexedText(".awards-grid span", t.awards);
+  document.querySelectorAll(".awards-grid div").forEach((item, index) => {
+    const proof = t.awardItems?.[index];
+    if (!proof) return;
+    item.querySelector("strong").textContent = proof[0];
+    item.querySelector("span").textContent = proof[1];
+  });
   setText(".faq .section-heading h2", t.faqTitle);
   document.querySelectorAll(".faq-list details").forEach((detail, index) => {
     const item = t.faqItems[index];
@@ -936,6 +1054,7 @@ function applyLanguage(lang) {
   });
 
   setText(".availability-copy span", t.availabilityKicker);
+  document.querySelector(".availability")?.setAttribute("aria-label", t.availabilityLabel);
   setText(".availability-copy h2", t.availabilityTitle);
   setText(".availability a span", t.availabilityLink[0]);
   setText(".availability a strong", t.availabilityLink[1]);
@@ -944,6 +1063,7 @@ function applyLanguage(lang) {
   setText(".contact-inner h2", t.contactTitle);
   setText(".brief-form-head span", t.contactForm.title);
   setText(".brief-form-head strong", t.contactForm.subtitle);
+  document.querySelector(".brief-form")?.setAttribute("aria-label", t.contactForm.ariaLabel);
   setIndexedText(".brief-form label > span", t.contactForm.fields);
   document.querySelector(".brief-form input[name='name']")?.setAttribute("placeholder", t.contactForm.placeholders[0]);
   document.querySelector(".brief-form input[name='email']")?.setAttribute("placeholder", t.contactForm.placeholders[1]);
@@ -966,6 +1086,7 @@ function applyLanguage(lang) {
   setIndexedText(".footer-map div:nth-child(1) a", t.footerStudio);
   setIndexedText(".footer-map div:nth-child(2) a", t.footerServices);
   setText(".newsletter label", t.newsletter);
+  document.querySelector(".newsletter")?.setAttribute("aria-label", t.newsletterLabel);
   document.querySelector("#newsletter-email")?.setAttribute("placeholder", t.newsletterPlaceholder);
   setText(".newsletter button", t.newsletterJoin);
   setIndexedText(".footer-bottom span", t.footerBottom);
@@ -992,7 +1113,6 @@ function applyLanguage(lang) {
   if (caseModal?.classList.contains("is-open") && lastCaseTrigger) {
     renderCaseModal(lastCaseTrigger);
   }
-
 }
 
 function setupLanguageToggle() {
@@ -1051,6 +1171,60 @@ function setupHeroRotator() {
   }, 2300);
 }
 
+function setupCursorStates() {
+  if (!cursor || !cursorDot || !cursorRing || !cursorLabel || prefersReducedMotion || !hasFinePointer) return;
+
+  document.addEventListener("pointerenter", () => cursor.classList.add("is-visible"));
+  document.addEventListener("pointerleave", () => cursor.classList.remove("is-visible"));
+  document.addEventListener("pointerdown", () => cursor.classList.add("is-pressed"));
+  document.addEventListener("pointerup", () => cursor.classList.remove("is-pressed"));
+
+  const interactiveElements = document.querySelectorAll("a, button, [data-cursor]");
+  interactiveElements.forEach((element) => {
+    if (element.dataset.cursorBound === "true") return;
+    element.dataset.cursorBound = "true";
+
+    element.addEventListener("pointerenter", () => {
+      const label = element.dataset.cursor || "";
+      cursor.classList.add("is-active");
+      cursor.classList.toggle("has-label", Boolean(label));
+      cursorLabel.textContent = label;
+    });
+
+    element.addEventListener("pointerleave", () => {
+      cursor.classList.remove("is-active", "has-label", "is-pressed");
+      cursorLabel.textContent = "";
+    });
+  });
+}
+
+function setupMobileMenu() {
+  const toggle = document.querySelector(".menu-toggle");
+  const menu = document.querySelector(".mobile-menu");
+  if (!toggle || !menu) return;
+
+  function setOpen(isOpen) {
+    const t = i18n[currentLang] || i18n.en;
+    menu.classList.toggle("is-open", isOpen);
+    menu.setAttribute("aria-hidden", String(!isOpen));
+    toggle.setAttribute("aria-expanded", String(isOpen));
+    toggle.setAttribute("aria-label", isOpen ? t.close : t.mobileMenuLabel);
+    toggle.textContent = isOpen ? t.close : t.menu;
+  }
+
+  toggle.addEventListener("click", () => {
+    setOpen(!menu.classList.contains("is-open"));
+  });
+
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setOpen(false);
+  });
+}
+
 function updateScrollMotion() {
   const max = document.documentElement.scrollHeight - window.innerHeight;
   const ratio = max > 0 ? window.scrollY / max : 0;
@@ -1068,7 +1242,6 @@ function updateScrollMotion() {
     contact.style.setProperty("--contact-x", `${58 + localY * 26}%`);
     contact.style.setProperty("--contact-y", `${42 + localY * 18}%`);
   }
-
 }
 
 function setupNewsletter() {
@@ -1169,11 +1342,15 @@ function renderServiceModal(index) {
   const number = serviceModal.querySelector(".service-modal-number");
   const copy = serviceModal.querySelector(".service-modal-copy");
   const list = serviceModal.querySelector(".service-modal-list ul");
+  const cta = serviceModal.querySelector(".service-modal-cta");
 
   number.textContent = String(index + 1).padStart(2, "0");
   title.textContent = detail[0];
   copy.textContent = detail[1];
   renderList(list, detail[2]);
+  if (cta) {
+    cta.href = getWhatsappHref(`${t.serviceWhatsappIntro} ${detail[0]}.\n${t.serviceWhatsappOutro}`);
+  }
 }
 
 function setupServiceModal() {
@@ -1285,6 +1462,16 @@ function renderCaseModal(card) {
   } else if (resultElement) {
     resultElement.textContent = card.dataset.caseResult || "";
   }
+  const projectLink = caseModal.querySelector(".case-project-link");
+  if (projectLink) {
+    projectLink.textContent = (i18n[currentLang] || i18n.en).projectLiveLabel;
+    projectLink.hidden = !resultUrl;
+    if (resultUrl) {
+      projectLink.href = resultUrl;
+    } else {
+      projectLink.removeAttribute("href");
+    }
+  }
   caseModal.querySelector(".case-timeline").textContent = card.dataset.caseTimeline || "";
   caseModal.querySelector(".case-role").textContent = card.dataset.caseRole || "";
   caseModal.querySelector(".case-stack").textContent = card.dataset.caseStack || "";
@@ -1329,6 +1516,7 @@ function setupCaseModal() {
   }
 
   grid?.addEventListener("click", (event) => {
+    if (event.target.closest("a")) return;
     const card = event.target.closest(".project-card[data-case-title]");
     if (card) openCase(card);
   });
